@@ -324,6 +324,10 @@ onMounted(async () => {
   await Promise.all([loadTips(), loadMedia()])
   await loadAllLines()
   
+  setTimeout(() => {
+    updateMarqueeDistance()
+  }, 500)
+  
   timeTimer = setInterval(updateTime, 1000)
   dataTimer = setInterval(loadBusData, 30000)
   if (mediaList.value.length > 1) {
@@ -647,13 +651,13 @@ onUnmounted(() => {
 }
 
 .bus-row .dest-en.marquee .dest-scroll {
-  animation: dest-marquee 14s ease-in-out infinite;
+  animation: dest-marquee 20s ease-in-out infinite;
 }
 
 @keyframes dest-marquee {
-  0%, 14% { transform: translateX(0); }
-  29%, 71% { transform: translateX(calc(-1 * var(--scroll-distance))); }
-  86%, 100% { transform: translateX(0); }
+  0%, 15% { transform: translateX(0); }
+  30%, 70% { transform: translateX(calc(-1 * var(--scroll-distance))); }
+  85%, 100% { transform: translateX(0); }
 }
 
 .bus-row .time {
