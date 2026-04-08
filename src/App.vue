@@ -297,14 +297,6 @@ async function loadRunningVehicles() {
           ← 返回
         </button>
         <h1>四会公交实时查询</h1>
-        <div v-if="currentView === 'list'" class="header-buttons">
-          <button @click="openRunningVehicles" class="header-btn vehicles-btn">
-            运行车辆
-          </button>
-          <button @click="openDashboard" class="header-btn dashboard-btn">
-            公交大屏
-          </button>
-        </div>
       </header>
     
     <main class="main">
@@ -329,6 +321,15 @@ async function loadRunningVehicles() {
           </button>
           <button :class="{ active: direction === 2 }" @click="toggleDirection">
             下行
+          </button>
+        </div>
+        
+        <div class="quick-actions">
+          <button @click="openRunningVehicles" class="action-btn">
+            运行车辆
+          </button>
+          <button @click="openDashboard" class="action-btn">
+            公交大屏
           </button>
         </div>
         
@@ -506,27 +507,20 @@ async function loadRunningVehicles() {
 @media (max-width: 480px) {
   .header {
     padding: 12px 15px;
-    flex-direction: column;
-    align-items: stretch;
   }
   
   .header h1 {
     font-size: 16px;
     text-align: center;
-    order: 1;
   }
   
-  .header-buttons {
-    position: static;
-    justify-content: center;
-    order: 2;
-    width: 100%;
+  .quick-actions {
+    flex-direction: column;
+    gap: 8px;
   }
   
-  .header-btn {
-    flex: 1;
-    padding: 8px 10px;
-    font-size: 12px;
+  .action-btn {
+    padding: 12px;
   }
 }
 
@@ -586,7 +580,7 @@ async function loadRunningVehicles() {
 .direction-toggle {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .direction-toggle button {
@@ -604,6 +598,28 @@ async function loadRunningVehicles() {
 .direction-toggle button.active {
   background: #667eea;
   color: white;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
 }
 
 .line-count {
@@ -1011,31 +1027,6 @@ async function loadRunningVehicles() {
 .site-item.active .site-name {
   color: #667eea;
   font-weight: 600;
-}
-
-.header-buttons {
-  position: absolute;
-  right: 15px;
-  display: flex;
-  gap: 8px;
-}
-
-.header-btn {
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.header-btn:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-.vehicles-btn {
-  background: rgba(255,255,255,0.25);
 }
 
 .running-view {
