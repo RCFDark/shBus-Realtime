@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { busAPI } from './api/bus.js'
 import Dashboard from './components/Dashboard.vue'
 
@@ -107,6 +107,7 @@ async function loadRealTimeData() {
     
     realTimeData.value = { ...data, vehicleList }
     
+    await nextTick()
     updateBusLocations()
   } catch (error) {
     console.error('获取实时数据失败:', error)
@@ -153,9 +154,15 @@ function updateBusLocations() {
   const siteElements = sitesContainerRef.value.querySelectorAll('.site-item')
   const locations = []
   
+  console.log('===== updateBusLocations =====')
+  console.log('sites length:', sites.length)
+  console.log('siteElements length:', siteElements.length)
+  
   realTimeData.value.sList.forEach((vehicle, index) => {
     const sno = Number(vehicle.sno) || 0
     const siteIndex = sno - 1
+    
+    console.log(`vehicle ${index}: sno=${sno}, siteIndex=${siteIndex}`)
     
     if (siteIndex >= 0 && siteIndex < sites.length && siteElements[siteIndex]) {
       const siteElement = siteElements[siteIndex]
@@ -166,6 +173,8 @@ function updateBusLocations() {
       const busLeft = siteLeft - containerLeft + siteWidth / 2
       const fromTime = Number(vehicle.fromTime) || 0
       
+      console.log(`  containerLeft=${containerLeft}, siteLeft=${siteLeft}, siteWidth=${siteWidth}, busLeft=${busLeft}`)
+      
       locations.push({
         left: busLeft,
         time: fromTime,
@@ -175,6 +184,7 @@ function updateBusLocations() {
   })
   
   busLocations.value = locations
+  console.log('locations:', locations)
 }
 
 async function selectSite(site) {
