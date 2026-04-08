@@ -276,13 +276,21 @@ function shouldMarquee(text) {
 }
 
 function calculateScrollDistance(el, text) {
-  if (!el || !text) return 0
+  if (!el || !text) {
+    console.log('calculateScrollDistance: el or text is null')
+    return 0
+  }
   const container = el
   const scrollEl = el.querySelector('.dest-scroll')
-  if (!scrollEl) return 0
+  if (!scrollEl) {
+    console.log('calculateScrollDistance: scrollEl not found')
+    return 0
+  }
   
   const textWidth = scrollEl.scrollWidth
   const containerWidth = container.clientWidth
+  
+  console.log(`calculateScrollDistance: textWidth=${textWidth}, containerWidth=${containerWidth}, distance=${textWidth - containerWidth}`)
   
   if (textWidth <= containerWidth) return 0
   return textWidth - containerWidth
@@ -290,11 +298,19 @@ function calculateScrollDistance(el, text) {
 
 function updateMarqueeDistance() {
   nextTick(() => {
+    console.log('updateMarqueeDistance called')
+    console.log('nextBus:', nextBus.value?.endpointEn, 'shouldMarquee:', shouldMarquee(nextBus.value?.endpointEn))
+    console.log('thirdBus:', thirdBus.value?.endpointEn, 'shouldMarquee:', shouldMarquee(thirdBus.value?.endpointEn))
+    console.log('nextBusDestRef:', nextBusDestRef.value)
+    console.log('thirdBusDestRef:', thirdBusDestRef.value)
+    
     if (nextBusDestRef.value && shouldMarquee(nextBus.value?.endpointEn)) {
       nextBusScrollDistance.value = calculateScrollDistance(nextBusDestRef.value, nextBus.value?.endpointEn)
+      console.log('nextBusScrollDistance:', nextBusScrollDistance.value)
     }
     if (thirdBusDestRef.value && shouldMarquee(thirdBus.value?.endpointEn)) {
       thirdBusScrollDistance.value = calculateScrollDistance(thirdBusDestRef.value, thirdBus.value?.endpointEn)
+      console.log('thirdBusScrollDistance:', thirdBusScrollDistance.value)
     }
   })
 }
