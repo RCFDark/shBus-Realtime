@@ -4,7 +4,7 @@ import { busAPI } from '../api/bus.js'
 import { mockData } from '../api/mock.js'
 import translations from '../../line_and_stops.json'
 
-const USE_MOCK = false
+const USE_MOCK = true
 
 const lineEnMap = new Map()
 const endpointEnMap = new Map()

@@ -1,7 +1,7 @@
 export const mockData = {
   lines: [
     {
-      linename: '1路',
+      linename: '1号线',
       linenameEn: 'Line 1',
       buses: [
         { time: 3, endpoint: '下㘵', endpointEn: 'Xiabu', plate: '粤H12345' },
@@ -10,7 +10,7 @@ export const mockData = {
       ]
     },
     {
-      linename: '2路',
+      linename: '2号线',
       linenameEn: 'Line 2',
       buses: [
         { time: 5, endpoint: '营脚', endpointEn: 'Yingjiao', plate: '粤H45678' },
@@ -19,7 +19,7 @@ export const mockData = {
       ]
     },
     {
-      linename: '19路',
+      linename: '19号线',
       linenameEn: 'Line 19',
       buses: [
         { time: 8, endpoint: '四会轻轨站', endpointEn: 'Sihui Railway Station', plate: '粤H11111' },
