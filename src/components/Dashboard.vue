@@ -190,6 +190,7 @@ async function loadBusData() {
   
   if (USE_MOCK) {
     busData.value = mockData.lines
+    updateMarqueeDistance()
     return
   }
   
@@ -253,6 +254,7 @@ async function loadBusData() {
     )
     
     busData.value = results.filter(item => item.buses.length > 0)
+    updateMarqueeDistance()
   } catch (error) {
     console.error('加载数据失败:', error)
   }
