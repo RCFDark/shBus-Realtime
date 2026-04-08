@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { busAPI } from '../api/bus.js'
 import { mockData } from '../api/mock.js'
 import translations from '../../line_and_stops.json'
@@ -42,6 +42,11 @@ const siteSearchQuery = ref('')
 const showRunningVehicles = ref(false)
 const runningVehicles = ref([])
 const loadingVehicles = ref(false)
+
+const nextBusDestRef = ref(null)
+const thirdBusDestRef = ref(null)
+const nextBusScrollDistance = ref(0)
+const thirdBusScrollDistance = ref(0)
 
 let timeTimer = null
 let dataTimer = null
@@ -268,6 +273,34 @@ function shouldMarquee(text) {
   return (text.length + 3) > 20
 }
 
+function calculateScrollDistance(el, text) {
+  if (!el || !text) return 0
+  const container = el
+  const scrollEl = el.querySelector('.dest-scroll')
+  if (!scrollEl) return 0
+  
+  const textWidth = scrollEl.scrollWidth
+  const containerWidth = container.clientWidth
+  
+  if (textWidth <= containerWidth) return 0
+  return textWidth - containerWidth
+}
+
+function updateMarqueeDistance() {
+  nextTick(() => {
+    if (nextBusDestRef.value && shouldMarquee(nextBus.value?.endpointEn)) {
+      nextBusScrollDistance.value = calculateScrollDistance(nextBusDestRef.value, nextBus.value?.endpointEn)
+    }
+    if (thirdBusDestRef.value && shouldMarquee(thirdBus.value?.endpointEn)) {
+      thirdBusScrollDistance.value = calculateScrollDistance(thirdBusDestRef.value, thirdBus.value?.endpointEn)
+    }
+  })
+}
+
+watch([nextBus, thirdBus], () => {
+  updateMarqueeDistance()
+})
+
 onMounted(async () => {
   updateTime()
   await Promise.all([loadTips(), loadMedia()])
@@ -323,7 +356,12 @@ onUnmounted(() => {
               <div class="label">The Next Bus</div>
               <template v-if="nextBus">
                 <div class="line-name">{{ nextBus?.linenameEn }}</div>
-                <div class="dest dest-en" :class="{ marquee: shouldMarquee(nextBus?.endpointEn) }"><span class="dest-scroll">To {{ nextBus?.endpointEn }}</span></div>
+                <div 
+                  ref="nextBusDestRef"
+                  class="dest dest-en" 
+                  :class="{ marquee: shouldMarquee(nextBus?.endpointEn) }"
+                  :style="{ '--scroll-distance': nextBusScrollDistance + 'px' }"
+                ><span class="dest-scroll">To {{ nextBus?.endpointEn }}</span></div>
                 <div class="time">{{ nextBus?.time }}Min</div>
               </template>
             </div>
@@ -344,7 +382,12 @@ onUnmounted(() => {
               <div class="label">The Third Bus</div>
               <template v-if="thirdBus">
                 <div class="line-name">{{ thirdBus?.linenameEn }}</div>
-                <div class="dest dest-en" :class="{ marquee: shouldMarquee(thirdBus?.endpointEn) }"><span class="dest-scroll">To {{ thirdBus?.endpointEn }}</span></div>
+                <div 
+                  ref="thirdBusDestRef"
+                  class="dest dest-en" 
+                  :class="{ marquee: shouldMarquee(thirdBus?.endpointEn) }"
+                  :style="{ '--scroll-distance': thirdBusScrollDistance + 'px' }"
+                ><span class="dest-scroll">To {{ thirdBus?.endpointEn }}</span></div>
                 <div class="time">{{ thirdBus?.time }}Min</div>
               </template>
             </div>
@@ -588,9 +631,9 @@ onUnmounted(() => {
 }
 
 @keyframes dest-marquee {
-  0%, 15% { transform: translateX(0); }
-  35%, 65% { transform: translateX(-80px); }
-  85%, 100% { transform: translateX(0); }
+  0%, 14% { transform: translateX(0); }
+  29%, 71% { transform: translateX(calc(-1 * var(--scroll-distance))); }
+  86%, 100% { transform: translateX(0); }
 }
 
 .bus-row .time {
