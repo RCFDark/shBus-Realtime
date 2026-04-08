@@ -827,6 +827,7 @@ onUnmounted(() => {
   .bus-module.third-bus {
     padding: 15px;
     flex: none;
+    min-height: 90px;
   }
   
   .bus-header .cn {
@@ -873,6 +874,9 @@ onUnmounted(() => {
   .bus-row .dest {
     font-size: 16px;
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .bus-row .time {
@@ -963,18 +967,32 @@ onUnmounted(() => {
     font-size: 14px;
   }
   
+  .bus-module.next-bus,
+  .bus-module.third-bus {
+    min-height: 80px;
+  }
+  
   .bus-row {
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 8px;
   }
   
   .bus-row .left,
   .bus-row .right {
     text-align: left;
+    flex: 1;
+    min-width: 0;
   }
   
   .bus-row .right {
-    text-align: left;
+    text-align: right;
+  }
+  
+  .bus-row .dest {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .footer-info {
