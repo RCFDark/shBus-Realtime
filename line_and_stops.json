@@ -1,0 +1,1150 @@
+{
+  "lines": [
+    {
+      "linename": "1号线",
+      "linenameEn": "Line 1",
+      "up": {
+        "startpoint": "下㘵",
+        "startpointEn": "Xiabu",
+        "endpoint": "五马岗",
+        "endpointEn": "Wumagang"
+      },
+      "down": {
+        "startpoint": "下㘵",
+        "startpointEn": "Xiabu",
+        "endpoint": "五马岗",
+        "endpointEn": "Wumagang"
+      }
+    },
+    {
+      "linename": "2号线",
+      "linenameEn": "Line 2",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "营脚",
+        "endpointEn": "Yingjiao"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "营脚",
+        "endpointEn": "Yingjiao"
+      }
+    },
+    {
+      "linename": "3号线",
+      "linenameEn": "Line 3",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "邓村",
+        "endpointEn": "Dengcun"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "邓村",
+        "endpointEn": "Dengcun"
+      }
+    },
+    {
+      "linename": "5号线",
+      "linenameEn": "Line 5",
+      "up": {
+        "startpoint": "济广塘",
+        "startpointEn": "Jiguangtang",
+        "endpoint": "凤凰半岛",
+        "endpointEn": "Fenghuangbandao"
+      },
+      "down": {
+        "startpoint": "济广塘",
+        "startpointEn": "Jiguangtang",
+        "endpoint": "凤凰半岛",
+        "endpointEn": "Fenghuangbandao"
+      }
+    },
+    {
+      "linename": "8号线",
+      "linenameEn": "Line 8",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "石狗",
+        "endpointEn": "Shigou"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "石狗",
+        "endpointEn": "Shigou"
+      }
+    },
+    {
+      "linename": "9号线",
+      "linenameEn": "Line 9",
+      "up": {
+        "startpoint": "碧海湾",
+        "startpointEn": "Bihaiwan",
+        "endpoint": "碧桂园",
+        "endpointEn": "Biguiyuan"
+      },
+      "down": {
+        "startpoint": "碧海湾",
+        "startpointEn": "Bihaiwan",
+        "endpoint": "碧桂园",
+        "endpointEn": "Biguiyuan"
+      }
+    },
+    {
+      "linename": "10号线",
+      "linenameEn": "Line 10",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "六祖寺",
+        "endpointEn": "Liuzusi"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "六祖寺",
+        "endpointEn": "Liuzusi"
+      }
+    },
+    {
+      "linename": "12号线",
+      "linenameEn": "Line 12",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "碧桂园",
+        "endpointEn": "Biguiyuan"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "碧桂园",
+        "endpointEn": "Biguiyuan"
+      }
+    },
+    {
+      "linename": "13号线",
+      "linenameEn": "Line 13",
+      "up": {
+        "startpoint": "高狮客运站",
+        "startpointEn": "Gaoshikeyunzhan",
+        "endpoint": "大旺客运站",
+        "endpointEn": "Dawangkeyunzhan"
+      },
+      "down": {
+        "startpoint": "高狮客运站",
+        "startpointEn": "Gaoshikeyunzhan",
+        "endpoint": "大旺客运站",
+        "endpointEn": "Dawangkeyunzhan"
+      }
+    },
+    {
+      "linename": "18号线",
+      "linenameEn": "Line 18",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "飞鹅岭",
+        "endpointEn": "Feieling"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "飞鹅岭",
+        "endpointEn": "Feieling"
+      }
+    },
+    {
+      "linename": "19号线",
+      "linenameEn": "Line 19",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "四会轻轨站",
+        "endpointEn": "Sihuiqingguizhan"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "四会轻轨站",
+        "endpointEn": "Sihuiqingguizhan"
+      }
+    },
+    {
+      "linename": "21号线",
+      "linenameEn": "Line 21",
+      "up": {
+        "startpoint": "高狮客运站",
+        "startpointEn": "Gaoshikeyunzhan",
+        "endpoint": "体育中心",
+        "endpointEn": "Tiyuzhongxin"
+      },
+      "down": {
+        "startpoint": "高狮客运站",
+        "startpointEn": "Gaoshikeyunzhan",
+        "endpoint": "体育中心",
+        "endpointEn": "Tiyuzhongxin"
+      }
+    },
+    {
+      "linename": "水口线",
+      "linenameEn": "Shuikou Line",
+      "up": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "水口",
+        "endpointEn": "Shuikou"
+      },
+      "down": {
+        "startpoint": "龙城",
+        "startpointEn": "Longcheng",
+        "endpoint": "水口",
+        "endpointEn": "Shuikou"
+      }
+    },
+    {
+      "linename": "1B线",
+      "linenameEn": "Line 1B",
+      "up": {
+        "startpoint": "下布（下㘵）",
+        "startpointEn": "Xiabu(Xiabu)",
+        "endpoint": "隆马大道",
+        "endpointEn": "Longmadadao"
+      },
+      "down": {
+        "startpoint": "下布（下㘵）",
+        "startpointEn": "Xiabu(Xiabu)",
+        "endpoint": "隆马大道",
+        "endpointEn": "Longmadadao"
+      }
+    },
+    {
+      "linename": "9B线",
+      "linenameEn": "Line 9B",
+      "up": {
+        "startpoint": "碧桂园",
+        "startpointEn": "Biguiyuan",
+        "endpoint": "龙江",
+        "endpointEn": "Longjiang"
+      },
+      "down": {
+        "startpoint": "碧桂园",
+        "startpointEn": "Biguiyuan",
+        "endpoint": "龙江",
+        "endpointEn": "Longjiang"
+      }
+    },
+    {
+      "linename": "12B线",
+      "linenameEn": "Line 12B",
+      "up": {
+        "startpoint": "碧桂园",
+        "startpointEn": "Biguiyuan",
+        "endpoint": "龙江",
+        "endpointEn": "Longjiang"
+      },
+      "down": {
+        "startpoint": "碧桂园",
+        "startpointEn": "Biguiyuan",
+        "endpoint": "龙江",
+        "endpointEn": "Longjiang"
+      }
+    }
+  ],
+  "sites": [
+    {
+      "siteName": "白沙岭村",
+      "siteNameEn": "Baishalingcun",
+      "longitude": 112.719307,
+      "latitude": 23.378527
+    },
+    {
+      "siteName": "白土六村",
+      "siteNameEn": "Baituliucun",
+      "longitude": 112.678322,
+      "latitude": 23.369917
+    },
+    {
+      "siteName": "宝林寺",
+      "siteNameEn": "Baolinsi",
+      "longitude": 112.625244,
+      "latitude": 23.348988
+    },
+    {
+      "siteName": "保健中心",
+      "siteNameEn": "Baojianzhongxin",
+      "longitude": 112.690155,
+      "latitude": 23.340317
+    },
+    {
+      "siteName": "保利",
+      "siteNameEn": "Baoli",
+      "longitude": 112.429008,
+      "latitude": 23.180941
+    },
+    {
+      "siteName": "北大公学",
+      "siteNameEn": "Beidagongxue",
+      "longitude": 112.393633,
+      "latitude": 23.217434
+    },
+    {
+      "siteName": "碧桂园",
+      "siteNameEn": "Biguiyuan",
+      "longitude": 112.7341,
+      "latitude": 23.329413
+    },
+    {
+      "siteName": "碧海湾",
+      "siteNameEn": "Bihaiwan",
+      "longitude": 112.683563,
+      "latitude": 23.334187
+    },
+    {
+      "siteName": "仓丰市场",
+      "siteNameEn": "Cangfengshichang",
+      "longitude": 112.655953,
+      "latitude": 23.362488
+    },
+    {
+      "siteName": "仓岗市场",
+      "siteNameEn": "Canggangshichang",
+      "longitude": 112.676483,
+      "latitude": 23.351885
+    },
+    {
+      "siteName": "曾家村",
+      "siteNameEn": "Cengjiacun",
+      "longitude": 112.69941,
+      "latitude": 23.429983
+    },
+    {
+      "siteName": "城中小学",
+      "siteNameEn": "Chengzhongxiaoxue",
+      "longitude": 112.686317,
+      "latitude": 23.347151
+    },
+    {
+      "siteName": "程村",
+      "siteNameEn": "Chengcun",
+      "longitude": 112.584175,
+      "latitude": 23.369642
+    },
+    {
+      "siteName": "赤岗",
+      "siteNameEn": "Chigang",
+      "longitude": 112.704437,
+      "latitude": 23.428787
+    },
+    {
+      "siteName": "大隆湾",
+      "siteNameEn": "Dalongwan",
+      "longitude": 112.72525,
+      "latitude": 23.318775
+    },
+    {
+      "siteName": "大旺公园",
+      "siteNameEn": "Dawanggongyuan",
+      "longitude": 112.810326,
+      "latitude": 23.305668
+    },
+    {
+      "siteName": "大旺客运站",
+      "siteNameEn": "Dawangkeyunzhan",
+      "longitude": 112.817598,
+      "latitude": 23.298325
+    },
+    {
+      "siteName": "大旺路口",
+      "siteNameEn": "Dawanglukou",
+      "longitude": 112.743477,
+      "latitude": 23.308477
+    },
+    {
+      "siteName": "邓村",
+      "siteNameEn": "Dengcun",
+      "longitude": 112.587341,
+      "latitude": 23.333983
+    },
+    {
+      "siteName": "电镀城",
+      "siteNameEn": "Dianducheng",
+      "longitude": 112.722031,
+      "latitude": 23.384213
+    },
+    {
+      "siteName": "东城街道",
+      "siteNameEn": "Dongchengjiedao",
+      "longitude": 112.713936,
+      "latitude": 23.332409
+    },
+    {
+      "siteName": "东海明珠",
+      "siteNameEn": "Donghaimingzhu",
+      "longitude": 112.707085,
+      "latitude": 23.333107
+    },
+    {
+      "siteName": "独岗站",
+      "siteNameEn": "Dugangzhan",
+      "longitude": 112.67717,
+      "latitude": 23.346832
+    },
+    {
+      "siteName": "飞鹅岭",
+      "siteNameEn": "Feieling",
+      "longitude": 112.720886,
+      "latitude": 23.311684
+    },
+    {
+      "siteName": "翡翠摆件城",
+      "siteNameEn": "Feicuibaijiancheng",
+      "longitude": 112.706459,
+      "latitude": 23.342903
+    },
+    {
+      "siteName": "翡翠山河",
+      "siteNameEn": "Feicuishanhe",
+      "longitude": 112.706444,
+      "latitude": 23.336044
+    },
+    {
+      "siteName": "凤凰半岛",
+      "siteNameEn": "Fenghuangbandao",
+      "longitude": 112.73407,
+      "latitude": 23.341219
+    },
+    {
+      "siteName": "凤山塘路口",
+      "siteNameEn": "Fengshantanglukou",
+      "longitude": 112.416576,
+      "latitude": 23.207542
+    },
+    {
+      "siteName": "佛仔村",
+      "siteNameEn": "Fozaicun",
+      "longitude": 112.731369,
+      "latitude": 23.401955
+    },
+    {
+      "siteName": "柑榄",
+      "siteNameEn": "Ganlan",
+      "longitude": 112.635315,
+      "latitude": 23.345413
+    },
+    {
+      "siteName": "高布",
+      "siteNameEn": "Gaobu",
+      "longitude": 112.392797,
+      "latitude": 23.218448
+    },
+    {
+      "siteName": "高布村",
+      "siteNameEn": "Gaobucun",
+      "longitude": 112.654244,
+      "latitude": 23.364567
+    },
+    {
+      "siteName": "高狮客运",
+      "siteNameEn": "Gaoshikeyun",
+      "longitude": 112.400774,
+      "latitude": 23.217154
+    },
+    {
+      "siteName": "高狮客运站",
+      "siteNameEn": "Gaoshikeyunzhan",
+      "longitude": 112.680306,
+      "latitude": 23.36219
+    },
+    {
+      "siteName": "高狮站",
+      "siteNameEn": "Gaoshizhan",
+      "longitude": 112.67955,
+      "latitude": 23.362064
+    },
+    {
+      "siteName": "戈登酒店",
+      "siteNameEn": "Gedengjiudian",
+      "longitude": 112.712547,
+      "latitude": 23.325344
+    },
+    {
+      "siteName": "公安局",
+      "siteNameEn": "Gonganju",
+      "longitude": 112.727516,
+      "latitude": 23.326178
+    },
+    {
+      "siteName": "供电局",
+      "siteNameEn": "Gongdianju",
+      "longitude": 112.694847,
+      "latitude": 23.341856
+    },
+    {
+      "siteName": "国际玉器城",
+      "siteNameEn": "Guojiyuqicheng",
+      "longitude": 112.720406,
+      "latitude": 23.324764
+    },
+    {
+      "siteName": "国色天香",
+      "siteNameEn": "Guosetianxiang",
+      "longitude": 112.408118,
+      "latitude": 23.204782
+    },
+    {
+      "siteName": "海伦堡",
+      "siteNameEn": "Hailunbao",
+      "longitude": 112.698998,
+      "latitude": 23.349197
+    },
+    {
+      "siteName": "河西小学",
+      "siteNameEn": "Hexixiaoxue",
+      "longitude": 112.677818,
+      "latitude": 23.373117
+    },
+    {
+      "siteName": "贺华市场",
+      "siteNameEn": "Hehuashichang",
+      "longitude": 112.80603,
+      "latitude": 23.30176
+    },
+    {
+      "siteName": "红光村",
+      "siteNameEn": "Hongguangcun",
+      "longitude": 112.729118,
+      "latitude": 23.400522
+    },
+    {
+      "siteName": "红鹰厂",
+      "siteNameEn": "Hongyingchang",
+      "longitude": 112.708832,
+      "latitude": 23.369551
+    },
+    {
+      "siteName": "华侨中学",
+      "siteNameEn": "Huaqiaozhongxue",
+      "longitude": 112.705605,
+      "latitude": 23.338535
+    },
+    {
+      "siteName": "会城中学",
+      "siteNameEn": "Huichengzhongxue",
+      "longitude": 112.692474,
+      "latitude": 23.339499
+    },
+    {
+      "siteName": "济广塘",
+      "siteNameEn": "Jiguangtang",
+      "longitude": 112.675621,
+      "latitude": 23.386978
+    },
+    {
+      "siteName": "家惠",
+      "siteNameEn": "Jiahui",
+      "longitude": 112.415626,
+      "latitude": 23.207238
+    },
+    {
+      "siteName": "家惠站",
+      "siteNameEn": "Jiahuizhan",
+      "longitude": 112.692596,
+      "latitude": 23.345169
+    },
+    {
+      "siteName": "检测站",
+      "siteNameEn": "Jiancezhan",
+      "longitude": 112.730003,
+      "latitude": 23.315998
+    },
+    {
+      "siteName": "建华厂",
+      "siteNameEn": "Jianhuachang",
+      "longitude": 112.647545,
+      "latitude": 23.344824
+    },
+    {
+      "siteName": "交警大队",
+      "siteNameEn": "Jiaojingdadui",
+      "longitude": 112.749565,
+      "latitude": 23.304112
+    },
+    {
+      "siteName": "金宝学校",
+      "siteNameEn": "Jinbaoxuexiao",
+      "longitude": 112.663544,
+      "latitude": 23.354187
+    },
+    {
+      "siteName": "金沙一号",
+      "siteNameEn": "Jinshayihao",
+      "longitude": 112.421754,
+      "latitude": 23.194086
+    },
+    {
+      "siteName": "景观大道",
+      "siteNameEn": "Jingguandadao",
+      "longitude": 112.722717,
+      "latitude": 23.337179
+    },
+    {
+      "siteName": "九龙湾",
+      "siteNameEn": "Jiulongwan",
+      "longitude": 112.707542,
+      "latitude": 23.325779
+    },
+    {
+      "siteName": "坑口",
+      "siteNameEn": "Kengkou",
+      "longitude": 112.601814,
+      "latitude": 23.351831
+    },
+    {
+      "siteName": "黎寨",
+      "siteNameEn": "Lizhai",
+      "longitude": 112.719086,
+      "latitude": 23.334002
+    },
+    {
+      "siteName": "李罗谭巷",
+      "siteNameEn": "Liluotanxiang",
+      "longitude": 112.661469,
+      "latitude": 23.356014
+    },
+    {
+      "siteName": "荔枝湾小学",
+      "siteNameEn": "Lizhiwanxiaoxue",
+      "longitude": 112.431674,
+      "latitude": 23.192296
+    },
+    {
+      "siteName": "林寨",
+      "siteNameEn": "Linzhai",
+      "longitude": 112.668709,
+      "latitude": 23.353901
+    },
+    {
+      "siteName": "岭南东方酒店",
+      "siteNameEn": "Lingnandongfangjiudian",
+      "longitude": 112.666054,
+      "latitude": 23.335192
+    },
+    {
+      "siteName": "六祖寺",
+      "siteNameEn": "Liuzusi",
+      "longitude": 112.651848,
+      "latitude": 23.323307
+    },
+    {
+      "siteName": "龙城",
+      "siteNameEn": "Longcheng",
+      "longitude": 112.687592,
+      "latitude": 23.343782
+    },
+    {
+      "siteName": "龙甫供电所",
+      "siteNameEn": "Longfugongdiansuo",
+      "longitude": 112.736237,
+      "latitude": 23.404528
+    },
+    {
+      "siteName": "龙甫政府",
+      "siteNameEn": "Longfuzhengfu",
+      "longitude": 112.713493,
+      "latitude": 23.373976
+    },
+    {
+      "siteName": "龙江",
+      "siteNameEn": "Longjiang",
+      "longitude": 112.412731,
+      "latitude": 23.205564
+    },
+    {
+      "siteName": "龙江大酒店",
+      "siteNameEn": "Longjiangdajiudian",
+      "longitude": 112.687508,
+      "latitude": 23.343035
+    },
+    {
+      "siteName": "龙头",
+      "siteNameEn": "Longtou",
+      "longitude": 112.728508,
+      "latitude": 23.422006
+    },
+    {
+      "siteName": "隆马大道",
+      "siteNameEn": "Longmadadao",
+      "longitude": 112.443282,
+      "latitude": 23.175638
+    },
+    {
+      "siteName": "隆马牌坊",
+      "siteNameEn": "Longmapaifang",
+      "longitude": 112.764877,
+      "latitude": 23.285267
+    },
+    {
+      "siteName": "马村",
+      "siteNameEn": "Macun",
+      "longitude": 112.770798,
+      "latitude": 23.271896
+    },
+    {
+      "siteName": "马田公园",
+      "siteNameEn": "Matiangongyuan",
+      "longitude": 112.701614,
+      "latitude": 23.345512
+    },
+    {
+      "siteName": "马田市场",
+      "siteNameEn": "Matianshichang",
+      "longitude": 112.698029,
+      "latitude": 23.345989
+    },
+    {
+      "siteName": "马田小学",
+      "siteNameEn": "Matianxiaoxue",
+      "longitude": 112.696747,
+      "latitude": 23.345278
+    },
+    {
+      "siteName": "梅岗村",
+      "siteNameEn": "Meigangcun",
+      "longitude": 112.727638,
+      "latitude": 23.397467
+    },
+    {
+      "siteName": "明华奥汉厂",
+      "siteNameEn": "Minghuaaohanchang",
+      "longitude": 112.735207,
+      "latitude": 23.313587
+    },
+    {
+      "siteName": "明华澳汉",
+      "siteNameEn": "Minghuaaohan",
+      "longitude": 112.441342,
+      "latitude": 23.180806
+    },
+    {
+      "siteName": "汽车站",
+      "siteNameEn": "Qichezhan",
+      "longitude": 112.682495,
+      "latitude": 23.349226
+    },
+    {
+      "siteName": "前峰村",
+      "siteNameEn": "Qianfengcun",
+      "longitude": 112.764397,
+      "latitude": 23.3188
+    },
+    {
+      "siteName": "清东站",
+      "siteNameEn": "Qingdongzhan",
+      "longitude": 112.708893,
+      "latitude": 23.348215
+    },
+    {
+      "siteName": "清塘村委",
+      "siteNameEn": "Qingtangcunwei",
+      "longitude": 112.702866,
+      "latitude": 23.354929
+    },
+    {
+      "siteName": "清塘小学",
+      "siteNameEn": "Qingtangxiaoxue",
+      "longitude": 112.70533,
+      "latitude": 23.361029
+    },
+    {
+      "siteName": "人民医院",
+      "siteNameEn": "Renminyiyuan",
+      "longitude": 112.678635,
+      "latitude": 23.350542
+    },
+    {
+      "siteName": "融创书院",
+      "siteNameEn": "Rongchuangshuyuan",
+      "longitude": 112.399397,
+      "latitude": 23.210866
+    },
+    {
+      "siteName": "沙田园",
+      "siteNameEn": "Shatianyuan",
+      "longitude": 112.701721,
+      "latitude": 23.35206
+    },
+    {
+      "siteName": "沙尾公园",
+      "siteNameEn": "Shaweigongyuan",
+      "longitude": 112.699707,
+      "latitude": 23.341127
+    },
+    {
+      "siteName": "沙尾小学",
+      "siteNameEn": "Shaweixiaoxue",
+      "longitude": 112.694939,
+      "latitude": 23.33947
+    },
+    {
+      "siteName": "石狗",
+      "siteNameEn": "Shigou",
+      "longitude": 112.583252,
+      "latitude": 23.373884
+    },
+    {
+      "siteName": "时代广场",
+      "siteNameEn": "Shidaiguangchang",
+      "longitude": 112.720856,
+      "latitude": 23.323647
+    },
+    {
+      "siteName": "时代外滩",
+      "siteNameEn": "Shidaiwaitan",
+      "longitude": 112.420876,
+      "latitude": 23.195215
+    },
+    {
+      "siteName": "市府广场",
+      "siteNameEn": "Shifuguangchang",
+      "longitude": 112.436143,
+      "latitude": 23.196343
+    },
+    {
+      "siteName": "水保站",
+      "siteNameEn": "Shuibaozhan",
+      "longitude": 112.730966,
+      "latitude": 23.415667
+    },
+    {
+      "siteName": "水果批发市场",
+      "siteNameEn": "Shuiguopifashichang",
+      "longitude": 112.407899,
+      "latitude": 23.216729
+    },
+    {
+      "siteName": "水口",
+      "siteNameEn": "Shuikou",
+      "longitude": 112.691965,
+      "latitude": 23.433252
+    },
+    {
+      "siteName": "水闸",
+      "siteNameEn": "Shuizha",
+      "longitude": 112.410484,
+      "latitude": 23.206752
+    },
+    {
+      "siteName": "水闸路",
+      "siteNameEn": "Shuizhalu",
+      "longitude": 112.688973,
+      "latitude": 23.34469
+    },
+    {
+      "siteName": "水闸站",
+      "siteNameEn": "Shuizhazhan",
+      "longitude": 112.689072,
+      "latitude": 23.344797
+    },
+    {
+      "siteName": "四海漂染厂",
+      "siteNameEn": "Sihaipiaoranchang",
+      "longitude": 112.720696,
+      "latitude": 23.381056
+    },
+    {
+      "siteName": "四会高中部",
+      "siteNameEn": "Sihuigaozhongbu",
+      "longitude": 112.715927,
+      "latitude": 23.322256
+    },
+    {
+      "siteName": "四会广场",
+      "siteNameEn": "Sihuiguangchang",
+      "longitude": 112.434371,
+      "latitude": 23.192531
+    },
+    {
+      "siteName": "四会轻轨站",
+      "siteNameEn": "Sihuiqingguizhan",
+      "longitude": 112.749748,
+      "latitude": 23.27281
+    },
+    {
+      "siteName": "四会市公安局",
+      "siteNameEn": "Sihuishigonganju",
+      "longitude": 112.430659,
+      "latitude": 23.195634
+    },
+    {
+      "siteName": "四会市中医院",
+      "siteNameEn": "Sihuishizhongyiyuan",
+      "longitude": 112.425681,
+      "latitude": 23.201058
+    },
+    {
+      "siteName": "塘边村",
+      "siteNameEn": "Tangbiancun",
+      "longitude": 112.721039,
+      "latitude": 23.332579
+    },
+    {
+      "siteName": "陶冲小学",
+      "siteNameEn": "Taochongxiaoxue",
+      "longitude": 112.711136,
+      "latitude": 23.345306
+    },
+    {
+      "siteName": "陶丽新苑",
+      "siteNameEn": "Taolixinyuan",
+      "longitude": 112.708832,
+      "latitude": 23.339621
+    },
+    {
+      "siteName": "陶塘村委",
+      "siteNameEn": "Taotangcunwei",
+      "longitude": 112.716454,
+      "latitude": 23.33779
+    },
+    {
+      "siteName": "陶塘路口",
+      "siteNameEn": "Taotanglukou",
+      "longitude": 112.711754,
+      "latitude": 23.335537
+    },
+    {
+      "siteName": "体育中心",
+      "siteNameEn": "Tiyuzhongxin",
+      "longitude": 112.698079,
+      "latitude": 23.322676
+    },
+    {
+      "siteName": "天光墟",
+      "siteNameEn": "Tianguangxu",
+      "longitude": 112.70668,
+      "latitude": 23.343163
+    },
+    {
+      "siteName": "铁场村",
+      "siteNameEn": "Tiechangcun",
+      "longitude": 112.649635,
+      "latitude": 23.369492
+    },
+    {
+      "siteName": "铁岗",
+      "siteNameEn": "Tiegang",
+      "longitude": 112.774361,
+      "latitude": 23.318037
+    },
+    {
+      "siteName": "铁岗村",
+      "siteNameEn": "Tiegangcun",
+      "longitude": 112.73922,
+      "latitude": 23.311483
+    },
+    {
+      "siteName": "万头村",
+      "siteNameEn": "Wantoucun",
+      "longitude": 112.65979,
+      "latitude": 23.357977
+    },
+    {
+      "siteName": "旺田咀",
+      "siteNameEn": "Wangtianzui",
+      "longitude": 112.719368,
+      "latitude": 23.427883
+    },
+    {
+      "siteName": "五马岗",
+      "siteNameEn": "Wumagang",
+      "longitude": 112.761345,
+      "latitude": 23.294178
+    },
+    {
+      "siteName": "西向",
+      "siteNameEn": "Xixiang",
+      "longitude": 112.708199,
+      "latitude": 23.42848
+    },
+    {
+      "siteName": "下白土",
+      "siteNameEn": "Xiabaitu",
+      "longitude": 112.676781,
+      "latitude": 23.379873
+    },
+    {
+      "siteName": "下布",
+      "siteNameEn": "Xiabu",
+      "longitude": 112.64505,
+      "latitude": 23.379755
+    },
+    {
+      "siteName": "新江市场",
+      "siteNameEn": "Xinjiangshichang",
+      "longitude": 112.752213,
+      "latitude": 23.302277
+    },
+    {
+      "siteName": "新江医院",
+      "siteNameEn": "Xinjiangyiyuan",
+      "longitude": 112.754646,
+      "latitude": 23.300516
+    },
+    {
+      "siteName": "新田园市场",
+      "siteNameEn": "Xintianyuanshichang",
+      "longitude": 112.705826,
+      "latitude": 23.352556
+    },
+    {
+      "siteName": "新屋村",
+      "siteNameEn": "Xinwucun",
+      "longitude": 112.771919,
+      "latitude": 23.269093
+    },
+    {
+      "siteName": "新园车场",
+      "siteNameEn": "Xinyuanchechang",
+      "longitude": 112.408983,
+      "latitude": 23.210447
+    },
+    {
+      "siteName": "新园车场站",
+      "siteNameEn": "Xinyuanchechangzhan",
+      "longitude": 112.681671,
+      "latitude": 23.350401
+    },
+    {
+      "siteName": "新园车站",
+      "siteNameEn": "Xinyuanchezhan",
+      "longitude": 112.681717,
+      "latitude": 23.350567
+    },
+    {
+      "siteName": "信华",
+      "siteNameEn": "Xinhua",
+      "longitude": 112.408518,
+      "latitude": 23.212402
+    },
+    {
+      "siteName": "信华站",
+      "siteNameEn": "Xinhuazhan",
+      "longitude": 112.680763,
+      "latitude": 23.354445
+    },
+    {
+      "siteName": "行政服务中心",
+      "siteNameEn": "Xingzhengfuwuzhongxin",
+      "longitude": 112.724709,
+      "latitude": 23.329317
+    },
+    {
+      "siteName": "鸭乸岭",
+      "siteNameEn": "Yanaling",
+      "longitude": 112.65271,
+      "latitude": 23.344425
+    },
+    {
+      "siteName": "亚洲金属园",
+      "siteNameEn": "Yazhoujinshuyuan",
+      "longitude": 112.724152,
+      "latitude": 23.389147
+    },
+    {
+      "siteName": "怡翠花园",
+      "siteNameEn": "Yicuihuayuan",
+      "longitude": 112.428233,
+      "latitude": 23.197535
+    },
+    {
+      "siteName": "怡翠皇庭",
+      "siteNameEn": "Yicuihuangting",
+      "longitude": 112.707245,
+      "latitude": 23.330017
+    },
+    {
+      "siteName": "移民村",
+      "siteNameEn": "Yimincun",
+      "longitude": 112.677208,
+      "latitude": 23.377253
+    },
+    {
+      "siteName": "银星假日酒店",
+      "siteNameEn": "Yinxingjiarijiudian",
+      "longitude": 112.666847,
+      "latitude": 23.336474
+    },
+    {
+      "siteName": "盈峰国际",
+      "siteNameEn": "Yingfengguoji",
+      "longitude": 112.718643,
+      "latitude": 23.323135
+    },
+    {
+      "siteName": "盈峰花园",
+      "siteNameEn": "Yingfenghuayuan",
+      "longitude": 112.715134,
+      "latitude": 23.339624
+    },
+    {
+      "siteName": "营脚",
+      "siteNameEn": "Yingjiao",
+      "longitude": 112.742088,
+      "latitude": 23.408506
+    },
+    {
+      "siteName": "永安村",
+      "siteNameEn": "Yongancun",
+      "longitude": 112.440945,
+      "latitude": 23.188403
+    },
+    {
+      "siteName": "张屋村",
+      "siteNameEn": "Zhangwucun",
+      "longitude": 112.769455,
+      "latitude": 23.274941
+    },
+    {
+      "siteName": "贞山宾馆",
+      "siteNameEn": "Zhenshanbinguan",
+      "longitude": 112.662483,
+      "latitude": 23.330421
+    },
+    {
+      "siteName": "贞山街道",
+      "siteNameEn": "Zhenshanjiedao",
+      "longitude": 112.669922,
+      "latitude": 23.340841
+    },
+    {
+      "siteName": "贞山站",
+      "siteNameEn": "Zhenshanzhan",
+      "longitude": 112.67141,
+      "latitude": 23.343872
+    },
+    {
+      "siteName": "中集智谷",
+      "siteNameEn": "Zhongjizhigu",
+      "longitude": 112.423828,
+      "latitude": 23.192067
+    },
+    {
+      "siteName": "仲泰小学",
+      "siteNameEn": "Zhongtaixiaoxue",
+      "longitude": 112.689438,
+      "latitude": 23.338823
+    },
+    {
+      "siteName": "珠江新城",
+      "siteNameEn": "Zhujiangxincheng",
+      "longitude": 112.71656,
+      "latitude": 23.328608
+    }
+  ]
+}

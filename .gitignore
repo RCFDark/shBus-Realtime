@@ -27,4 +27,3 @@ dist-ssr
 apis_and_token.txt
 test-*.mjs
 fetch-lines.cjs
-line_and_stops.json
