@@ -836,7 +836,7 @@ onUnmounted(() => {
   
   .bus-header .en {
     font-size: 13px;
-    margin-top: -5px;
+    margin-top: 0px;
   }
   
   .bus-line {
@@ -849,7 +849,7 @@ onUnmounted(() => {
   
   .bus-destination .en {
     font-size: 16px;
-    margin-top: -5px;
+    margin-top: 0px;
   }
   
   .bus-time .cn {
@@ -858,7 +858,7 @@ onUnmounted(() => {
   
   .bus-time .en {
     font-size: 16px;
-    margin-top: -5px;
+    margin-top: 0px;
   }
   
   .bus-row .label {
