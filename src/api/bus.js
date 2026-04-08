@@ -2,7 +2,7 @@ import { API_CONFIG } from './config'
 
 async function request(url, data = {}) {
   try {
-    const response = await fetch(`${API_CONFIG.baseURL}${url}`, {
+    const response = await fetch(`${API_CONFIG.baseURL}${url}?_t=${Date.now()}`, {
       method: 'POST',
       headers: API_CONFIG.headers,
       body: JSON.stringify(data)
