@@ -263,6 +263,11 @@ function nextMedia() {
   }
 }
 
+function shouldMarquee(text) {
+  if (!text) return false
+  return (text.length + 3) > 20
+}
+
 onMounted(async () => {
   updateTime()
   await Promise.all([loadTips(), loadMedia()])
@@ -318,7 +323,7 @@ onUnmounted(() => {
               <div class="label">The Next Bus</div>
               <template v-if="nextBus">
                 <div class="line-name">{{ nextBus?.linenameEn }}</div>
-                <div class="dest dest-en"><span class="dest-scroll">To {{ nextBus?.endpointEn }}</span></div>
+                <div class="dest dest-en" :class="{ marquee: shouldMarquee(nextBus?.endpointEn) }"><span class="dest-scroll">To {{ nextBus?.endpointEn }}</span></div>
                 <div class="time">{{ nextBus?.time }}Min</div>
               </template>
             </div>
@@ -339,7 +344,7 @@ onUnmounted(() => {
               <div class="label">The Third Bus</div>
               <template v-if="thirdBus">
                 <div class="line-name">{{ thirdBus?.linenameEn }}</div>
-                <div class="dest dest-en"><span class="dest-scroll">To {{ thirdBus?.endpointEn }}</span></div>
+                <div class="dest dest-en" :class="{ marquee: shouldMarquee(thirdBus?.endpointEn) }"><span class="dest-scroll">To {{ thirdBus?.endpointEn }}</span></div>
                 <div class="time">{{ thirdBus?.time }}Min</div>
               </template>
             </div>
@@ -576,7 +581,10 @@ onUnmounted(() => {
 
 .bus-row .dest-scroll {
   display: inline-block;
-  animation: dest-marquee 6s ease-in-out infinite;
+}
+
+.bus-row .dest-en.marquee .dest-scroll {
+  animation: dest-marquee 14s ease-in-out infinite;
 }
 
 @keyframes dest-marquee {
