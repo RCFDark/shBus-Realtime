@@ -4,9 +4,9 @@ export const mockData = {
       linename: '1号线',
       linenameEn: 'Line 1',
       buses: [
-        { time: 3, endpoint: '下㘵', endpointEn: 'Xiabu', plate: '粤H12345' },
+        { time: 3, endpoint: '下㘵', endpointEn: 'Xiabu Longname Test Station', plate: '粤H12345' },
         { time: 12, endpoint: '下㘵', endpointEn: 'Xiabu', plate: '粤H23456' },
-        { time: 25, endpoint: '下㘵', endpointEn: 'Xiabu', plate: '粤H34567' }
+        { time: 25, endpoint: '下㘵', endpointEn: 'Another Very Long English Station Name', plate: '粤H34567' }
       ]
     },
     {

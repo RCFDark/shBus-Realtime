@@ -590,10 +590,12 @@ onUnmounted(() => {
 .bus-row .left,
 .bus-row .right {
   flex: 1;
+  min-width: 0;
 }
 
 .bus-row .right {
   text-align: right;
+  overflow: hidden;
 }
 
 .bus-row .label {
