@@ -318,7 +318,7 @@ onUnmounted(() => {
               <div class="label">The Next Bus</div>
               <template v-if="nextBus">
                 <div class="line-name">{{ nextBus?.linenameEn }}</div>
-                <div class="dest">To {{ nextBus?.endpointEn }}</div>
+                <div class="dest dest-en"><span class="dest-scroll">To {{ nextBus?.endpointEn }}</span></div>
                 <div class="time">{{ nextBus?.time }}Min</div>
               </template>
             </div>
@@ -339,7 +339,7 @@ onUnmounted(() => {
               <div class="label">The Third Bus</div>
               <template v-if="thirdBus">
                 <div class="line-name">{{ thirdBus?.linenameEn }}</div>
-                <div class="dest">To {{ thirdBus?.endpointEn }}</div>
+                <div class="dest dest-en"><span class="dest-scroll">To {{ thirdBus?.endpointEn }}</span></div>
                 <div class="time">{{ thirdBus?.time }}Min</div>
               </template>
             </div>
@@ -566,6 +566,23 @@ onUnmounted(() => {
   color: #000;
   font-weight: 700;
   margin-bottom: 6px;
+}
+
+.bus-row .dest-en {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.bus-row .dest-scroll {
+  display: inline-block;
+  animation: dest-marquee 6s ease-in-out infinite;
+}
+
+@keyframes dest-marquee {
+  0%, 15% { transform: translateX(0); }
+  35%, 65% { transform: translateX(-80px); }
+  85%, 100% { transform: translateX(0); }
 }
 
 .bus-row .time {
