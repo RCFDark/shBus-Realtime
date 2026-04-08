@@ -284,53 +284,87 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard-screen">
-    <div class="rotate-hint">
-      <div class="rotate-icon">📱</div>
-      <div class="rotate-text">请横屏查看公交大屏</div>
-      <div class="rotate-text-en">Please rotate your device</div>
-    </div>
-    
-    <div class="dashboard-scroll">
-      <div class="top-bar">
-        <div class="left-info">
-          <div class="date">{{ formattedDate }}</div>
-          <div class="time">{{ formattedTime }}</div>
-        </div>
-        <div class="center-info">
-          <div class="station-cn">本站：{{ selectedSiteName || '请选择站点' }}</div>
-          <div class="station-en">This Stop: {{ selectedSite?.siteNameEn || 'Select Stop' }}</div>
-        </div>
-        <div class="right-actions">
-          <button @click="showSiteSelector = true" class="ctrl-btn">切换站点</button>
-          <button @click="$emit('back')" class="ctrl-btn">返回</button>
-        </div>
-      </div>
-      
-      <div class="main-content">
-        <div class="bus-card main-bus">
-          <div class="card-header">
-            <div class="header-left">
-              <div class="cn">本趟公交开往</div>
-              <div class="en">This Bus</div>
-            </div>
-            <div class="header-right">
-              <div class="plate">车牌：{{ currentBus?.plate || '粤HXXXXX' }}</div>
-            </div>
+    <div class="dashboard-body">
+      <div class="left-panel">
+        <div class="bus-module main-bus">
+          <div class="bus-header">
+            <div class="cn">本趟公交开往</div>
+            <div class="en">This Bus</div>
           </div>
-          <div class="card-body">
-            <div class="line-info">{{ currentBus?.linename }} / {{ currentBus?.linenameEn }}</div>
-            <div class="destination">
-              <div class="cn">{{ currentBus?.endpoint || '--' }}</div>
-              <div class="en">{{ currentBus?.endpointEn || '--' }}</div>
+          <template v-if="currentBus">
+            <div class="bus-line">{{ currentBus?.linename }} / {{ currentBus?.linenameEn }}</div>
+            <div class="bus-destination">
+              <div class="cn">{{ currentBus?.endpoint }}</div>
+              <div class="en">{{ currentBus?.endpointEn }}</div>
             </div>
-            <div class="arrival-time">
-              <div class="cn">{{ currentBus?.time || '--' }}分钟</div>
-              <div class="en">{{ currentBus?.time || '--' }}Min</div>
+            <div class="bus-time">
+              <div class="cn">{{ currentBus?.time }}分钟</div>
+              <div class="en">{{ currentBus?.time }}Min</div>
+            </div>
+          </template>
+        </div>
+        
+        <div class="bus-module next-bus">
+          <div class="bus-row">
+            <div class="left">
+              <div class="label">下一趟</div>
+              <template v-if="nextBus">
+                <div class="line-name">{{ nextBus?.linename }}</div>
+                <div class="dest">开往 {{ nextBus?.endpoint }}</div>
+                <div class="time">{{ nextBus?.time }}分钟</div>
+              </template>
+            </div>
+            <div class="right">
+              <div class="label">The Next Bus</div>
+              <template v-if="nextBus">
+                <div class="line-name">{{ nextBus?.linenameEn }}</div>
+                <div class="dest">To {{ nextBus?.endpointEn }}</div>
+                <div class="time">{{ nextBus?.time }}Min</div>
+              </template>
             </div>
           </div>
         </div>
         
-        <div class="media-section">
+        <div class="bus-module third-bus">
+          <div class="bus-row">
+            <div class="left">
+              <div class="label">第三趟</div>
+              <template v-if="thirdBus">
+                <div class="line-name">{{ thirdBus?.linename }}</div>
+                <div class="dest">开往 {{ thirdBus?.endpoint }}</div>
+                <div class="time">{{ thirdBus?.time }}分钟</div>
+              </template>
+            </div>
+            <div class="right">
+              <div class="label">The Third Bus</div>
+              <template v-if="thirdBus">
+                <div class="line-name">{{ thirdBus?.linenameEn }}</div>
+                <div class="dest">To {{ thirdBus?.endpointEn }}</div>
+                <div class="time">{{ thirdBus?.time }}Min</div>
+              </template>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer-info">
+          <div class="left">
+            <div class="date">{{ formattedDate }}</div>
+            <div class="time">{{ formattedTime }}</div>
+          </div>
+          <div class="right">
+            <div class="cn">本站：{{ selectedSiteName || '请选择站点' }}</div>
+            <div class="en">This Stop: {{ selectedSite?.siteNameEn || 'Select Stop' }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="right-panel">
+        <div class="right-top-bar">
+          <div class="plate-info">本趟：{{ currentBus?.plate || '粤HXXXXX' }}</div>
+          <button @click="showSiteSelector = true" class="ctrl-btn">切换站点</button>
+          <button @click="$emit('back')" class="ctrl-btn">返回</button>
+        </div>
+        <div class="right-content">
           <div v-if="mediaList.length > 0" class="media-container">
             <img 
               v-if="mediaList[currentMediaIndex]?.type === 'image'" 
@@ -351,54 +385,11 @@ onUnmounted(() => {
             宣传图
           </div>
         </div>
-        
-        <div class="bus-list">
-          <div class="bus-card other-bus">
-            <div class="card-header">
-              <div class="label">下一趟 / The Next Bus</div>
-            </div>
-            <div class="card-row">
-              <div class="col-left">
-                <div class="line-name">{{ nextBus?.linename }}</div>
-                <div class="dest">开往 {{ nextBus?.endpoint || '--' }}</div>
-              </div>
-              <div class="col-right">
-                <div class="line-name">{{ nextBus?.linenameEn }}</div>
-                <div class="dest">To {{ nextBus?.endpointEn || '--' }}</div>
-              </div>
-              <div class="col-time">
-                <div class="time">{{ nextBus?.time || '--' }}分钟</div>
-                <div class="time-en">{{ nextBus?.time || '--' }}Min</div>
-              </div>
-            </div>
+        <div class="bottom-bar">
+          <div class="scroll-container" :style="{ animationDuration: Math.max(10, tipsWidth / 50) + 's' }">
+            <span class="scroll-text">{{ tips }}</span>
+            <span class="scroll-text">{{ tips }}</span>
           </div>
-          
-          <div class="bus-card other-bus">
-            <div class="card-header">
-              <div class="label">第三趟 / The Third Bus</div>
-            </div>
-            <div class="card-row">
-              <div class="col-left">
-                <div class="line-name">{{ thirdBus?.linename }}</div>
-                <div class="dest">开往 {{ thirdBus?.endpoint || '--' }}</div>
-              </div>
-              <div class="col-right">
-                <div class="line-name">{{ thirdBus?.linenameEn }}</div>
-                <div class="dest">To {{ thirdBus?.endpointEn || '--' }}</div>
-              </div>
-              <div class="col-time">
-                <div class="time">{{ thirdBus?.time || '--' }}分钟</div>
-                <div class="time-en">{{ thirdBus?.time || '--' }}Min</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bottom-bar">
-        <div class="scroll-container" :style="{ animationDuration: Math.max(10, tipsWidth / 50) + 's' }">
-          <span class="scroll-text">{{ tips }}</span>
-          <span class="scroll-text">{{ tips }}</span>
         </div>
       </div>
     </div>
@@ -436,211 +427,223 @@ onUnmounted(() => {
   width: 100vw;
   height: 100vh;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  border: 8px solid #4A89DC;
+  box-sizing: border-box;
   position: relative;
+}
+
+.dashboard-body {
+  flex: 1;
+  display: flex;
   overflow: hidden;
 }
 
-.rotate-hint {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.rotate-icon {
-  font-size: 80px;
-  animation: rotate-phone 2s ease-in-out infinite;
-  margin-bottom: 30px;
-}
-
-.rotate-text {
-  color: white;
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.rotate-text-en {
-  color: rgba(255,255,255,0.8);
-  font-size: 18px;
-}
-
-@keyframes rotate-phone {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(90deg);
-  }
-}
-
-.dashboard-scroll {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+.left-panel {
+  width: 40%;
+  background: #fff;
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
+  border-right: 4px solid #4A89DC;
+  overflow: hidden;
 }
 
-.top-bar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px 30px;
+.bus-module {
+  background: #fff;
+  padding: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.bus-module.main-bus {
   display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  flex-shrink: 0;
+  min-height: 280px;
+  padding: 15px 20px;
+  flex: 2;
 }
 
-.left-info .date {
-  font-size: 16px;
-  opacity: 0.9;
-  margin-bottom: 4px;
-}
-
-.left-info .time {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.center-info {
-  text-align: center;
+.bus-module.next-bus,
+.bus-module.third-bus {
+  padding: 15px 20px;
   flex: 1;
 }
 
-.center-info .station-cn {
-  font-size: 24px;
-  font-weight: 600;
+.bus-header {
+  text-align: center;
+  margin-bottom: 2px;
+  margin-top: -10px;
+}
+
+.bus-header .cn {
+  font-size: 32px;
+  color: #000;
+  font-weight: 500;
+}
+
+.bus-header .en {
+  font-size: 20px;
+  color: #000;
+  margin-top: -7px;
+}
+
+.bus-line {
+  font-size: 28px;
+  color: #4A89DC;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.bus-destination {
+  text-align: center;
   margin-bottom: 4px;
 }
 
-.center-info .station-en {
+.bus-destination .cn {
+  font-size: 52px;
+  color: #000;
+  font-weight: 700;
+}
+
+.bus-destination .en {
+  font-size: 24px;
+  color: #000;
+  margin-top: -7px;
+}
+
+.bus-time {
+  text-align: center;
+}
+
+.bus-time .cn {
+  font-size: 42px;
+  color: #000;
+  font-weight: 600;
+}
+
+.bus-time .en {
+  font-size: 24px;
+  color: #000;
+  margin-top: -7px;
+}
+
+.bus-module.next-bus,
+.bus-module.third-bus {
+  padding: 15px 20px;
+}
+
+.bus-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bus-row .left,
+.bus-row .right {
+  flex: 1;
+}
+
+.bus-row .right {
+  text-align: right;
+}
+
+.bus-row .label {
   font-size: 16px;
-  opacity: 0.85;
+  color: #000;
+  margin-bottom: 6px;
 }
 
-.right-actions {
-  display: flex;
-  gap: 10px;
+.bus-row .line-name {
+  font-size: 18px;
+  color: #4A89DC;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-.ctrl-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+.bus-row .dest {
+  font-size: 22px;
+  color: #000;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-.ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+.bus-row .time {
+  font-size: 20px;
+  color: #000;
+  font-weight: 600;
 }
 
-.main-content {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.bus-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-}
-
-.bus-card.main-bus {
-  border: 3px solid #667eea;
-}
-
-.bus-card .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.footer-info {
+  background: #fff;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-top: 2px solid #eee;
 }
 
-.card-header .header-left .cn {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.card-header .header-left .en {
-  font-size: 13px;
-  opacity: 0.85;
-  margin-top: 2px;
-}
-
-.card-header .header-right .plate {
+.footer-info .left .date {
   font-size: 16px;
-  font-weight: 500;
+  color: #000;
 }
 
-.card-body {
-  padding: 30px 20px;
-  text-align: center;
+.footer-info .left .time {
+  font-size: 22px;
+  color: #000;
+  font-weight: 600;
+  margin-top: 4px;
 }
 
-.card-body .line-info {
+.footer-info .right {
+  text-align: right;
+}
+
+.footer-info .right .cn {
   font-size: 24px;
-  color: #667eea;
-  font-weight: 700;
-  margin-bottom: 15px;
-}
-
-.card-body .destination .cn {
-  font-size: 48px;
   color: #000;
   font-weight: 700;
-  margin-bottom: 5px;
 }
 
-.card-body .destination .en {
-  font-size: 22px;
-  color: #666;
-  margin-bottom: 15px;
+.footer-info .right .en {
+  font-size: 16px;
+  color: #000;
+  margin-top: 4px;
 }
 
-.card-body .arrival-time .cn {
-  font-size: 36px;
-  color: #667eea;
-  font-weight: 700;
-}
-
-.card-body .arrival-time .en {
-  font-size: 18px;
-  color: #999;
-  margin-top: 5px;
-}
-
-.media-section {
+.right-panel {
+  width: 60%;
   background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.right-top-bar {
+  height: 70px;
+  background: #1a3a6e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.plate-info {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.right-content {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .media-container {
@@ -653,96 +656,29 @@ onUnmounted(() => {
 
 .media-content {
   max-width: 100%;
-  max-height: 300px;
+  max-height: 100%;
   object-fit: contain;
 }
 
 .media-content.video {
   width: 100%;
-  height: auto;
-  max-height: 300px;
+  height: 100%;
   object-fit: cover;
 }
 
 .media-placeholder {
   color: #fff;
-  font-size: 32px;
+  font-size: 48px;
   font-weight: 700;
-  padding: 40px;
-}
-
-.bus-list {
-  display: flex;
-  gap: 20px;
-}
-
-.bus-card.other-bus {
-  flex: 1;
-}
-
-.bus-card.other-bus .card-header {
-  background: #f5f7fa;
-  color: #333;
-  padding: 12px 20px;
-}
-
-.bus-card.other-bus .card-header .label {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.card-row {
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.card-row .col-left,
-.card-row .col-right {
-  flex: 1;
-}
-
-.card-row .col-left .line-name,
-.card-row .col-right .line-name {
-  font-size: 18px;
-  color: #667eea;
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.card-row .col-left .dest,
-.card-row .col-right .dest {
-  font-size: 16px;
-  color: #666;
-}
-
-.card-row .col-time {
-  text-align: center;
-  padding: 10px 20px;
-  background: #f5f7fa;
-  border-radius: 8px;
-}
-
-.card-row .col-time .time {
-  font-size: 24px;
-  color: #667eea;
-  font-weight: 700;
-}
-
-.card-row .col-time .time-en {
-  font-size: 14px;
-  color: #999;
-  margin-top: 2px;
 }
 
 .bottom-bar {
-  background: #667eea;
-  padding: 15px 0;
-  margin-top: auto;
+  height: 50px;
+  background: #4A89DC;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
   flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
 }
 
 .scroll-container {
@@ -753,9 +689,9 @@ onUnmounted(() => {
 
 .scroll-text {
   color: rgba(255, 255, 255, 0.95);
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 500;
-  padding-right: 100px;
+  padding-right: 150px;
   white-space: nowrap;
 }
 
@@ -766,6 +702,20 @@ onUnmounted(() => {
   100% {
     transform: translateX(-50%);
   }
+}
+
+.ctrl-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .site-selector-overlay {
@@ -783,7 +733,7 @@ onUnmounted(() => {
 
 .site-selector-modal {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -795,7 +745,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 15px 20px;
   border-bottom: 1px solid #eee;
 }
 
@@ -808,7 +758,7 @@ onUnmounted(() => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 28px;
+  font-size: 24px;
   color: #999;
   cursor: pointer;
   padding: 0;
@@ -817,10 +767,10 @@ onUnmounted(() => {
 
 .site-search {
   margin: 15px 20px;
-  padding: 12px 16px;
+  padding: 10px 15px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .site-list {
@@ -831,12 +781,11 @@ onUnmounted(() => {
 }
 
 .site-option {
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 12px 15px;
+  border-radius: 6px;
   cursor: pointer;
   margin-bottom: 5px;
   background: #f5f8fc;
-  transition: all 0.2s;
 }
 
 .site-option:hover {
@@ -844,289 +793,217 @@ onUnmounted(() => {
 }
 
 .site-option.active {
-  background: #667eea;
+  background: #4A89DC;
   color: #fff;
 }
 
-@media (max-width: 768px) and (orientation: portrait) {
-  .dashboard-scroll {
-    display: none !important;
+@media (max-width: 768px) {
+  .dashboard-screen {
+    border-width: 3px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
-  .rotate-hint {
-    display: flex !important;
-  }
-}
-
-@media (max-width: 768px) and (orientation: landscape) {
-  .dashboard-scroll {
-    display: flex !important;
+  .dashboard-body {
+    flex-direction: column;
+    overflow: visible;
+    min-height: auto;
   }
   
-  .rotate-hint {
-    display: none !important;
+  .left-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 3px solid #4A89DC;
+    overflow: visible;
   }
   
-  .top-bar {
-    padding: 12px 20px;
-    gap: 15px;
-  }
-  
-  .left-info .time {
-    font-size: 22px;
-  }
-  
-  .center-info .station-cn {
-    font-size: 18px;
-  }
-  
-  .center-info .station-en {
-    font-size: 13px;
-  }
-  
-  .ctrl-btn {
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-  
-  .main-content {
-    padding: 15px;
-    gap: 15px;
-  }
-  
-  .bus-card .card-header {
-    padding: 10px 15px;
-  }
-  
-  .card-header .header-left .cn {
-    font-size: 16px;
-  }
-  
-  .card-header .header-left .en {
-    font-size: 11px;
-  }
-  
-  .card-header .header-right .plate {
-    font-size: 13px;
-  }
-  
-  .card-body {
+  .bus-module.main-bus {
+    min-height: auto;
     padding: 20px 15px;
+    flex: none;
   }
   
-  .card-body .line-info {
+  .bus-module.next-bus,
+  .bus-module.third-bus {
+    padding: 15px;
+    flex: none;
+  }
+  
+  .bus-header .cn {
+    font-size: 20px;
+  }
+  
+  .bus-header .en {
+    font-size: 13px;
+    margin-top: -5px;
+  }
+  
+  .bus-line {
     font-size: 18px;
-    margin-bottom: 10px;
   }
   
-  .card-body .destination .cn {
+  .bus-destination .cn {
     font-size: 32px;
-    margin-bottom: 3px;
   }
   
-  .card-body .destination .en {
+  .bus-destination .en {
     font-size: 16px;
-    margin-bottom: 10px;
+    margin-top: -5px;
   }
   
-  .card-body .arrival-time .cn {
+  .bus-time .cn {
     font-size: 26px;
   }
   
-  .card-body .arrival-time .en {
+  .bus-time .en {
+    font-size: 16px;
+    margin-top: -5px;
+  }
+  
+  .bus-row .label {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  
+  .bus-row .line-name {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  
+  .bus-row .dest {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  
+  .bus-row .time {
+    font-size: 15px;
+  }
+  
+  .footer-info {
+    padding: 12px 15px;
+  }
+  
+  .footer-info .left .date {
+    font-size: 13px;
+  }
+  
+  .footer-info .left .time {
+    font-size: 17px;
+    margin-top: 2px;
+  }
+  
+  .footer-info .right .cn {
+    font-size: 18px;
+  }
+  
+  .footer-info .right .en {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  
+  .right-panel {
+    width: 100%;
+    min-height: 300px;
+  }
+  
+  .right-top-bar {
+    height: 50px;
+    padding: 0 15px;
+  }
+  
+  .plate-info {
+    font-size: 18px;
+  }
+  
+  .ctrl-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .media-placeholder {
+    font-size: 32px;
+  }
+  
+  .bottom-bar {
+    height: 40px;
+  }
+  
+  .scroll-text {
+    font-size: 18px;
+    padding-right: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bus-header .cn {
+    font-size: 18px;
+  }
+  
+  .bus-header .en {
+    font-size: 12px;
+  }
+  
+  .bus-line {
+    font-size: 16px;
+  }
+  
+  .bus-destination .cn {
+    font-size: 28px;
+  }
+  
+  .bus-destination .en {
     font-size: 14px;
   }
   
-  .media-section {
-    min-height: 150px;
+  .bus-time .cn {
+    font-size: 22px;
   }
   
-  .media-content {
-    max-height: 200px;
+  .bus-time .en {
+    font-size: 14px;
   }
   
-  .media-content.video {
-    max-height: 200px;
+  .bus-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .bus-row .left,
+  .bus-row .right {
+    text-align: left;
+  }
+  
+  .bus-row .right {
+    text-align: left;
+  }
+  
+  .footer-info {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .footer-info .left,
+  .footer-info .right {
+    text-align: center;
+  }
+  
+  .plate-info {
+    font-size: 16px;
+  }
+  
+  .ctrl-btn {
+    padding: 5px 10px;
+    font-size: 11px;
   }
   
   .media-placeholder {
     font-size: 24px;
-    padding: 30px;
-  }
-  
-  .bus-list {
-    gap: 15px;
-  }
-  
-  .bus-card.other-bus .card-header {
-    padding: 10px 15px;
-  }
-  
-  .bus-card.other-bus .card-header .label {
-    font-size: 14px;
-  }
-  
-  .card-row {
-    padding: 15px;
-    gap: 15px;
-  }
-  
-  .card-row .col-left .line-name,
-  .card-row .col-right .line-name {
-    font-size: 15px;
-    margin-bottom: 3px;
-  }
-  
-  .card-row .col-left .dest,
-  .card-row .col-right .dest {
-    font-size: 13px;
-  }
-  
-  .card-row .col-time {
-    padding: 8px 15px;
-  }
-  
-  .card-row .col-time .time {
-    font-size: 20px;
-  }
-  
-  .card-row .col-time .time-en {
-    font-size: 12px;
-  }
-  
-  .bottom-bar {
-    padding: 10px 0;
   }
   
   .scroll-text {
-    font-size: 14px;
+    font-size: 15px;
     padding-right: 60px;
-  }
-}
-
-@media (max-width: 568px) and (orientation: landscape) {
-  .top-bar {
-    padding: 10px 15px;
-  }
-  
-  .left-info .date {
-    font-size: 13px;
-  }
-  
-  .left-info .time {
-    font-size: 18px;
-  }
-  
-  .center-info .station-cn {
-    font-size: 15px;
-  }
-  
-  .center-info .station-en {
-    font-size: 11px;
-  }
-  
-  .ctrl-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .main-content {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .card-header .header-left .cn {
-    font-size: 14px;
-  }
-  
-  .card-header .header-left .en {
-    font-size: 10px;
-  }
-  
-  .card-header .header-right .plate {
-    font-size: 12px;
-  }
-  
-  .card-body {
-    padding: 15px 12px;
-  }
-  
-  .card-body .line-info {
-    font-size: 15px;
-    margin-bottom: 8px;
-  }
-  
-  .card-body .destination .cn {
-    font-size: 26px;
-  }
-  
-  .card-body .destination .en {
-    font-size: 14px;
-  }
-  
-  .card-body .arrival-time .cn {
-    font-size: 22px;
-  }
-  
-  .card-body .arrival-time .en {
-    font-size: 12px;
-  }
-  
-  .media-section {
-    min-height: 120px;
-  }
-  
-  .media-content {
-    max-height: 160px;
-  }
-  
-  .media-content.video {
-    max-height: 160px;
-  }
-  
-  .media-placeholder {
-    font-size: 20px;
-    padding: 25px;
-  }
-  
-  .bus-list {
-    gap: 12px;
-  }
-  
-  .card-row {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .card-row .col-left .line-name,
-  .card-row .col-right .line-name {
-    font-size: 13px;
-  }
-  
-  .card-row .col-left .dest,
-  .card-row .col-right .dest {
-    font-size: 12px;
-  }
-  
-  .card-row .col-time {
-    padding: 6px 12px;
-  }
-  
-  .card-row .col-time .time {
-    font-size: 16px;
-  }
-  
-  .card-row .col-time .time-en {
-    font-size: 11px;
-  }
-  
-  .bottom-bar {
-    padding: 8px 0;
-  }
-  
-  .scroll-text {
-    font-size: 12px;
-    padding-right: 50px;
   }
 }
 </style>
