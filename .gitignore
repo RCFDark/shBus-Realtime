@@ -44,3 +44,9 @@ captcha.jpg
 # wrangler
 .wrangler
 .wrangler/
+
+# WorkBuddy 工作区数据
+.workbuddy/
+
+# 临时脚本
+.tmp*
