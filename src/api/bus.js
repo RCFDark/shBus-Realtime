@@ -1,11 +1,16 @@
 import { API_CONFIG } from './config'
 
+const TIMEOUT_MS = 8000
+
 async function request(url, data = {}) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
     const response = await fetch(`${API_CONFIG.baseURL}${url}?_t=${Date.now()}`, {
       method: 'POST',
       headers: API_CONFIG.headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal: controller.signal
     })
 
     const result = await response.json()
@@ -19,10 +24,20 @@ async function request(url, data = {}) {
     }
     throw new Error(result.msg || '请求失败')
   } catch (error) {
+    // 超时给出更明确的提示，避免页面一直转圈
+    if (error?.name === 'AbortError') {
+      throw new Error(`请求超时（>${TIMEOUT_MS / 1000}s）：${API_CONFIG.baseURL}${url}`)
+    }
     console.error('API Error:', error)
     throw error
+  } finally {
+    clearTimeout(timer)
   }
 }
+
+// 车辆列表按线路缓存 5 分钟：同一线路在上行/下行各会请求一次，缓存后请求量直接减半
+const vehicleCache = new Map()
+const VEHICLE_TTL = 5 * 60 * 1000
 
 export const busAPI = {
   async getLineList(direction = 1, type = 1) {
@@ -53,6 +68,12 @@ export const busAPI = {
   },
 
   async getVehicleList(line) {
-    return request('/gj/vehicle/findList', { line })
+    const now = Date.now()
+    const cached = vehicleCache.get(line)
+    if (cached && now - cached.at < VEHICLE_TTL) return cached.data
+
+    const data = await request('/gj/vehicle/findList', { line })
+    vehicleCache.set(line, { at: now, data })
+    return data
   }
 }

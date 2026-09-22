@@ -61,6 +61,30 @@ npx wrangler kv:namespace create TOKEN_KV
 
 ---
 
+## ⚠️ 重要：国内网络不要用 workers.dev（2026-09-22 实测）
+
+对 `https://shbus-api.rcfdark.workers.dev` 的实测结果：
+
+| 路径 | 结果 |
+| --- | --- |
+| `*.workers.dev` 直连 | 3 次全部超时（>10s 后失败） |
+| `*.workers.dev` 走代理 | 首次 3.8s，之后 0.85s |
+| 官方接口直连 | **0.24 ~ 0.44s** |
+
+结论：`workers.dev` 在国内网络基本不可达，浏览器直连必然卡到超时，
+页面表现就是「半天加载不出来 → 无法加载线路」。而官方接口本身会回显 Origin、允许跨域，
+浏览器直连只要 0.3 秒 —— **这一步其实可以整个跳过，Worker 不是必需的。**
+
+`src/api/config.js` 里已加两道保险，所以旧的 `API_BASE` 变量不清掉也不会再坑你：
+
+1. 生产环境若 `VITE_API_BASE` 指向 `*.workers.dev`，**自动忽略并回退直连官方接口**；
+2. 未配置仓库 Secret `TICKET_TOKEN` 时用内置兜底 token（控制台会告警），避免整站 601。
+
+若仍想用自有代理：把 Worker 绑到**自己的域名**（不要用 workers.dev），
+再把变量 `API_BASE` 改成该域名即可。
+
+---
+
 ## 二、把 Worker 地址告诉前端构建
 
 在 GitHub 仓库 → **Settings → Secrets and variables → Actions → Variables** 里新建变量：
