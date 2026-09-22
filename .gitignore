@@ -27,3 +27,20 @@ dist-ssr
 apis_and_token.txt
 test-*.mjs
 fetch-lines.cjs
+line_and_stops.json
+
+# 本地环境变量 / 密钥
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# refresh-token.mjs 下载的验证码图片
+captcha.jpg
+
+# 手动上传用的构建产物副本（同 dist，不入库）
+上传/
+
+# wrangler
+.wrangler
+.wrangler/

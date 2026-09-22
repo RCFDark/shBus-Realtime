@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      ticket_token:
+        description: '新的 ticket-token（token 过期时填；留空则用仓库 Secret TICKET_TOKEN）'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -24,27 +29,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build
+        # 凭证在构建时注入，不写在代码里。
+        # 优先级：手动触发时填写的 ticket_token > 仓库 Secret TICKET_TOKEN
+        # 配置 Secret：仓库 Settings → Secrets and variables → Actions → New repository secret
+        env:
+          VITE_TICKET_TOKEN: ${{ github.event.inputs.ticket_token || secrets.TICKET_TOKEN }}
+          VITE_USER_ID: ${{ vars.USER_ID }}
+          VITE_API_BASE: ${{ vars.API_BASE }}
         run: npm run build
-      
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
-      
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

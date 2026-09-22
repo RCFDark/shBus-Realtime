@@ -1,0 +1,22 @@
+name = "shbus-api"
+main = "worker.js"
+compatibility_date = "2026-09-22"
+
+# 自定义域名（可选）：先在 Cloudflare 上托管一个域名，然后取消下面注释
+# routes = [{ pattern = "bus-api.example.com", custom_domain = true }]
+
+# KV 命名空间（可选，推荐）
+# 创建：npx wrangler kv:namespace create TOKEN_KV
+# 然后把返回的 id 填到下面
+# [[kv_namespaces]]
+# binding = "TOKEN_KV"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[vars]
+# 实测 token 不校验 userId，留空即可；想改成自己账号的 id 也行
+USER_ID = ""
+# 强烈建议设置：/admin 页面会要求 ?key=你的值 才能访问，防止被陌生人拿去刷短信
+ADMIN_KEY = "moonsky666"
+
+# 敏感变量不要写在这里，用命令设置（加密存储，不进代码库）：
+#   npx wrangler secret put TICKET_TOKEN
