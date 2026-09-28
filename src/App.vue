@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { busAPI } from './api/bus.js'
 import Dashboard from './components/Dashboard.vue'
 
@@ -16,6 +16,13 @@ const runningVehicles = ref([])
 const loadingVehicles = ref(false)
 const busLocations = ref([])
 const sitesContainerRef = ref(null)
+
+// 车辆最后上报位置的时间超过这个秒数，就认为它可能已经退出服务（掉线/收车/GPS 异常）
+const STALE_SECONDS = 5 * 60
+
+// 定时推进的「当前时间」（秒级时间戳），让"数据陈旧"提示不用刷新页面也会自己更新
+const nowTs = ref(Math.floor(Date.now() / 1000))
+let nowTimer = null
 
 function extractLineNumber(name) {
   const match = name.match(/(\d+)/)
@@ -62,7 +69,12 @@ function isOperationEnded(line, dir) {
 }
 
 onMounted(async () => {
+  nowTimer = setInterval(() => { nowTs.value = Math.floor(Date.now() / 1000) }, 30000)
   await loadLines()
+})
+
+onUnmounted(() => {
+  if (nowTimer) clearInterval(nowTimer)
 })
 
 async function loadLines() {
@@ -116,32 +128,116 @@ async function loadRealTimeData() {
   }
 }
 
+// 当前选中站点在站点列表里的下标（-1 = 取不到）
+function selectedSiteIndex() {
+  const sites = selectedLine.value?.siteList || []
+  return sites.findIndex(s => s.id === selectedSite.value?.id)
+}
+
+// 把上游原始车辆数据补成「带派生信息」的对象：
+//   gap   —— 车辆所在站相对当前站的站距：>0 已过站、0 就在本站、<0 还没到本站
+//   passed—— 上游用 fromTime<=0 表示已过站/已到站
+//   stale —— 最后上报时间距今超过 5 分钟
+const vehicleStates = computed(() => {
+  const list = realTimeData.value?.sList || []
+  const sites = selectedLine.value?.siteList || []
+  const selIdx = selectedSiteIndex()
+  return list.map(v => {
+    const sno = Number(v.sno) || 0
+    const siteIndex = sno - 1
+    const fromTime = Number(v.fromTime) || 0
+    const updatedAt = Number(v.time) || 0
+    const lagSec = updatedAt ? Math.max(0, nowTs.value - updatedAt) : 0
+    return {
+      ...v,
+      sno,
+      siteIndex,
+      fromTime,
+      passed: fromTime <= 0,
+      gap: selIdx === -1 ? 0 : siteIndex - selIdx,
+      siteName: sites[siteIndex]?.siteName || '',
+      stale: lagSec > STALE_SECONDS,
+      lagMinutes: Math.round(lagSec / 60)
+    }
+  })
+})
+
+// 只保留「还会到达当前站点」的车：已经开过本站的、以及到终点收车的都不要
 function shouldShowVehicle(vehicle) {
   if (!selectedLine.value?.siteList) return true
-  
+
   const sites = selectedLine.value.siteList
-  const selectedSiteIndex = sites.findIndex(s => s.id === selectedSite.value?.id)
+  const selIdx = selectedSiteIndex()
   const lastSiteIndex = sites.length - 1
-  
-  const sno = Number(vehicle.sno) || 0
-  const siteIndex = sno - 1
-  const fromTime = Number(vehicle.fromTime) || 0
-  const isPassed = fromTime === 0
+  const siteIndex = vehicle.siteIndex
+  const isPassed = vehicle.passed
   const isTerminal = siteIndex === lastSiteIndex
-  
+
   if (isTerminal && isPassed) return false
-  
-  if (selectedSiteIndex !== -1) {
-    if (siteIndex > selectedSiteIndex + 1) return false
-    if (siteIndex === selectedSiteIndex + 1 && isPassed) return false
+
+  if (selIdx !== -1) {
+    if (siteIndex > selIdx + 1) return false
+    if (siteIndex === selIdx + 1 && isPassed) return false
   }
-  
+
   return true
 }
 
+// 按剩余到站时间升序：3 分钟的在第一行，9 分钟第二行……
+// 已过站/已到站（fromTime<=0）没有到站时间，统一沉到最后
 const filteredVehicleList = computed(() => {
-  if (!realTimeData.value?.sList) return []
-  return realTimeData.value.sList.filter(shouldShowVehicle)
+  return vehicleStates.value
+    .filter(shouldShowVehicle)
+    .sort((a, b) => {
+      const ta = a.fromTime > 0 ? a.fromTime : Number.POSITIVE_INFINITY
+      const tb = b.fromTime > 0 ? b.fromTime : Number.POSITIVE_INFINITY
+      if (ta !== tb) return ta - tb
+      return a.siteIndex - b.siteIndex
+    })
+})
+
+// 已经被过滤掉的车 = 已经开过本站（或已到终点）的车
+const passedVehicles = computed(() => {
+  const shown = new Set(filteredVehicleList.value.map(v => String(v.vehicleid)))
+  return vehicleStates.value.filter(v => !shown.has(String(v.vehicleid)))
+})
+
+// 一辆都没等到时的过站提示：拿离本站最近的那辆已过站的车来算"已过站几站"
+const passedHint = computed(() => {
+  if (filteredVehicleList.value.length > 0) return null
+  if (vehicleStates.value.length === 0) return null
+
+  const nearest = [...passedVehicles.value].sort((a, b) => a.gap - b.gap)[0]
+  if (!nearest) return null
+
+  const sites = selectedLine.value?.siteList || []
+  const atTerminal = nearest.siteIndex === sites.length - 1 && sites.length > 0
+  const siteName = nearest.siteName || `第 ${nearest.sno} 站`
+  const atFirstSite = selectedSiteIndex() === 0
+
+  let detail
+  if (atTerminal) {
+    detail = `上一班车已到达终点站「${siteName}」`
+  } else if (nearest.gap > 0) {
+    detail = `上一班车已过站 ${nearest.gap} 站，现到达「${siteName}」`
+  } else {
+    detail = '上一班车刚刚离站'
+  }
+
+  return {
+    title: atFirstSite ? '等待首站发车' : '等待下一班发车',
+    detail
+  }
+})
+
+// 服务端在上行/下行返回的 startpoint / endpoint 是同一组值（都以上行为准），
+// 但站点列表会按方向整体倒序。所以这里手动按方向决定箭头的指向：
+// 上行 = 下㘵 → 五马岗，下行 = 五马岗 → 下㘵
+const directionRoute = computed(() => {
+  const start = selectedLine.value?.startpoint
+  const end = selectedLine.value?.endpoint
+  if (!start || !end) return ''
+  return direction.value === 2 ? `${end} → ${start}` : `${start} → ${end}`
 })
 
 function updateBusLocations() {
@@ -229,6 +325,16 @@ async function openRunningVehicles() {
   await loadRunningVehicles()
 }
 
+// 两坐标点球面距离（米），用于根据车辆 GPS 判断它在哪个站附近
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000
+  const rad = d => (d * Math.PI) / 180
+  const a =
+    Math.sin(rad(lat2 - lat1) / 2) ** 2 +
+    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lng2 - lng1) / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(a))
+}
+
 async function loadRunningVehicles() {
   loadingVehicles.value = true
   try {
@@ -249,17 +355,43 @@ async function loadRunningVehicles() {
         
         const addVehicles = (data, direction, directionText, startpoint, endpoint) => {
           if (!data?.sList) return
-          
+
+          // sno 是车辆在其行车方向站点列表中的序号：上行用原列表，下行用反转后的列表
+          // （已用车辆 GPS 反查验证：下行车的 sno 对应下行列表，误差 < 100m）
+          const dirSites = direction === 2 ? [...(line.siteList || [])].reverse() : (line.siteList || [])
+
           for (const bus of data.sList) {
             const v = vehicleList?.find(item => Number(item.vehicleid) === Number(bus.vehicleid))
             const plate = v?.vehiclelicense || '未知'
+
+            // 车辆当前位置：sno 站 + GPS 距离判断是“已到达”还是“即将到达”
+            const sno = Number(bus.sno) || 0
+            const site = sno >= 1 ? dirSites[sno - 1] : null
+            const lat = Number(bus.gpslat) / 1e6
+            const lng = Number(bus.gpslnt) / 1e6
+
+            let status = ''
+            let distanceText = ''
+            if (site && lat && lng) {
+              const d = distanceMeters(lat, lng, Number(site.latitude), Number(site.longitude))
+              if (d <= 150) {
+                status = 'arrived'
+              } else {
+                status = 'approaching'
+                distanceText = d >= 1000 ? `≈${(d / 1000).toFixed(1)}km` : `≈${Math.round(d / 50) * 50}m`
+              }
+            }
+
             if (!vehiclesMap.has(line.linename)) {
               vehiclesMap.set(line.linename, { linename: line.linename, startpoint, endpoint, vehicles: [] })
             }
             vehiclesMap.get(line.linename).vehicles.push({
               plate,
               direction,
-              directionText
+              directionText,
+              siteName: site?.siteName || '',
+              status,
+              distanceText
             })
           }
         }
@@ -361,7 +493,10 @@ async function loadRunningVehicles() {
         <div v-else-if="currentView === 'detail'" class="detail-view">
           <div class="line-header">
             <h2>{{ selectedLine?.linename }}</h2>
-            <div class="line-route">{{ selectedLine?.startpoint }} ⇋ {{ selectedLine?.endpoint }}</div>
+            <div class="line-direction">
+              <span class="dir-tag" :class="{ down: direction === 2 }">{{ direction === 2 ? '下行' : '上行' }}</span>
+              <span class="dir-route">{{ directionRoute }}</span>
+            </div>
             <div class="line-meta">
               <span>票价 {{ selectedLine?.startingfare }}-{{ selectedLine?.fullfare }}元</span>
             </div>
@@ -389,17 +524,34 @@ async function loadRunningVehicles() {
               <div class="current-site">当前站点: {{ selectedSite?.siteName }}</div>
               
               <div v-if="filteredVehicleList.length > 0" class="vehicle-list">
-                <div v-for="vehicle in filteredVehicleList" :key="vehicle.vehicleid" class="vehicle-card">
-                  <div class="vehicle-plate" v-if="getVehiclePlate(vehicle.vehicleid)">{{ getVehiclePlate(vehicle.vehicleid) }}</div>
-                  <div class="vehicle-info">
-                    <span class="vehicle-distance" v-if="vehicle.currentDistance !== '0' && vehicle.currentDistance !== 0">{{ vehicle.currentDistance }}米</span>
-                    <span v-if="vehicle.fromTime <= 0" class="vehicle-time passed">已过站</span>
+                <div
+                  v-for="vehicle in filteredVehicleList"
+                  :key="vehicle.vehicleid"
+                  class="vehicle-card"
+                  :class="{ 'is-stale': vehicle.stale }"
+                >
+                  <div class="vehicle-top">
+                    <span class="vehicle-plate" v-if="getVehiclePlate(vehicle.vehicleid)">{{ getVehiclePlate(vehicle.vehicleid) }}</span>
+                    <span v-if="vehicle.passed" class="vehicle-time passed">已过站</span>
                     <span v-else class="vehicle-time">{{ vehicle.fromTime }}分钟</span>
                   </div>
+                  <div class="vehicle-info">
+                    <span class="vehicle-distance" v-if="vehicle.currentDistance !== '0' && vehicle.currentDistance !== 0">{{ vehicle.currentDistance }}米</span>
+                    <span class="vehicle-gap" v-if="vehicle.gap < 0">还有 {{ -vehicle.gap }} 站</span>
+                    <span class="vehicle-gap" v-else-if="vehicle.gap === 0">已在本站</span>
+                    <span class="vehicle-pos" v-if="vehicle.siteName">车辆位置：{{ vehicle.siteName }}</span>
+                  </div>
                   <div class="vehicle-update">更新: {{ vehicle.timeStr }}</div>
+                  <div v-if="vehicle.stale" class="vehicle-warn">
+                    ⚠ 公交车可能退出服务或异常（已 {{ vehicle.lagMinutes }} 分钟未更新位置）
+                  </div>
                 </div>
               </div>
               <div v-else-if="isOperationEnded(selectedLine, direction)" class="no-bus ended">今天该线路运营已结束</div>
+              <div v-else-if="passedHint" class="passed-hint">
+                <div class="passed-title">🕒 {{ passedHint.title }}</div>
+                <div class="passed-detail">{{ passedHint.detail }}</div>
+              </div>
               <div v-else class="no-bus">暂无运营车辆</div>
             </div>
             
@@ -420,16 +572,23 @@ async function loadRunningVehicles() {
               </div>
               
               <div class="sites-track" ref="sitesContainerRef">
-                    <div 
-                      v-for="site in selectedLine?.siteList" 
-                      :key="site.id"
-                      class="site-item"
-                      :class="{ active: selectedSite?.id === site.id }"
-                      @click="selectSite(site)"
-                    >
-                      <div class="site-dot"></div>
-                      <div class="site-name">{{ site.siteName }}</div>
-                    </div>
+                    <template v-for="(site, siteIdx) in selectedLine?.siteList" :key="site.id">
+                      <div
+                        class="site-item"
+                        :class="{ active: selectedSite?.id === site.id }"
+                        @click="selectSite(site)"
+                      >
+                        <div class="site-dot"></div>
+                        <div class="site-name">{{ site.siteName }}</div>
+                      </div>
+                      <!-- 站间方向箭头：列表顺序 = 行车方向，恒指向右。
+                           注意不要给这个元素加 site-item 类，updateBusLocations 靠该类名取站点索引 -->
+                      <div
+                        v-if="siteIdx < (selectedLine?.siteList?.length || 0) - 1"
+                        class="site-arrow"
+                        aria-hidden="true"
+                      ></div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -464,6 +623,12 @@ async function loadRunningVehicles() {
                   <div v-for="(vehicle, idx) in line.vehicles" :key="idx" class="vehicle-row">
                     <span class="v-plate">{{ vehicle.plate }}</span>
                     <span class="v-direction" :class="{ up: vehicle.direction === 1, down: vehicle.direction === 2 }">{{ vehicle.directionText }}</span>
+                    <span v-if="vehicle.siteName" class="v-position">
+                      <span v-if="vehicle.status === 'arrived'" class="v-state arrived">已到达：{{ vehicle.siteName }}</span>
+                      <span v-else-if="vehicle.status === 'approaching'" class="v-state approaching">即将到达：{{ vehicle.siteName }}</span>
+                      <span v-else>位置：{{ vehicle.siteName }}</span>
+                      <span v-if="vehicle.distanceText" class="v-dist">{{ vehicle.distanceText }}</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -737,6 +902,37 @@ async function loadRunningVehicles() {
   margin-bottom: 5px;
 }
 
+/* 运行方向：上行/下行 箭头指向跟着方向走 */
+.line-direction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dir-tag {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.dir-tag.down {
+  background: #fff0e6;
+  color: #fa8c16;
+}
+
+.dir-route {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 站点轨道：站与站之间叠加一个方向箭头（见 .site-arrow） */
+
 .line-time {
   display: flex;
   gap: 20px;
@@ -812,15 +1008,44 @@ async function loadRunningVehicles() {
   border-radius: 8px;
 }
 
+/* 数据超过 5 分钟没更新：整张卡片标红，提示车辆可能已退出服务 */
+.vehicle-card.is-stale {
+  background: #fff7f7;
+  box-shadow: inset 0 0 0 1px #ffccc7;
+}
+
+.vehicle-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
 .vehicle-plate {
   font-weight: 600;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+}
+
+.vehicle-warn {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #ff4d4f;
+}
+
+.vehicle-gap {
+  color: #fa8c16;
+}
+
+.vehicle-pos {
+  color: #999;
 }
 
 .vehicle-info {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 6px 15px;
   margin-bottom: 5px;
 }
 
@@ -852,6 +1077,27 @@ async function loadRunningVehicles() {
 .no-bus.ended {
   color: #ff6b6b;
   font-weight: 500;
+}
+
+/* 过站提示：等不到车，但线路上其实有车（只是都开过本站了） */
+.passed-hint {
+  background: #fffbe6;
+  box-shadow: inset 0 0 0 1px #ffe58f;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.passed-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #d48806;
+  margin-bottom: 6px;
+}
+
+.passed-detail {
+  font-size: 13px;
+  color: #8c6d1f;
 }
 
 .sites-section {
@@ -1145,5 +1391,49 @@ async function loadRunningVehicles() {
   margin-left: auto;
   font-weight: 600;
   color: #667eea;
+}
+
+/* ===== 站间方向箭头 =====
+   白底圆形垫片压在轨道线上，内嵌向右箭头（列表顺序 = 行车方向，恒指向右）。
+   圆点中心在 track 顶部下方 28px（padding-top 20 + 圆点半径 8），
+   箭头垫片 18px，故 margin-top = 28 - 9 - 20 = -1px。 */
+.site-arrow {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  margin-top: -1px;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Ccircle cx='9' cy='9' r='9' fill='%23ffffff'/%3E%3Cpath d='M6.2 5.2 L12 9 L6.2 12.8' fill='none' stroke='%23a9b4c4' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+.site-arrow.next-active {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Ccircle cx='9' cy='9' r='9' fill='%23ffffff'/%3E%3Cpath d='M6.2 5.2 L12 9 L6.2 12.8' fill='none' stroke='%23667eea' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ===== 运行车辆面板：车辆位置 ===== */
+.vehicle-row .v-position {
+  margin-left: auto;
+  font-size: 13px;
+  text-align: right;
+  color: #666;
+}
+
+.v-position .v-state {
+  font-weight: 600;
+}
+
+.v-position .v-state.arrived {
+  color: #389e0d;
+}
+
+.v-position .v-state.approaching {
+  color: #d46b08;
+}
+
+.v-position .v-dist {
+  color: #999;
+  font-size: 12px;
 }
 </style>
