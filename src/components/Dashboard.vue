@@ -4,6 +4,34 @@ import { busAPI } from '../api/bus.js'
 import { mockData } from '../api/mock.js'
 import translations from '../../line_and_stops.json'
 
+// 拼音库体积较大（~280KB），不进主包：等首屏渲染完再后台预取，
+// 取到之前搜索降级为「中文包含匹配」，取到后自动切换成拼音/首字母搜索。
+let matchSiteFn = null
+let pinyinOfFn = null
+const pinyinReady = ref(false)
+
+// 线路名里的数字，用于「按号线排序」（水口线这类没有数字的排最后）
+function lineNumber(linename) {
+  const m = String(linename || '').match(/\d+/)
+  return m ? parseInt(m[0], 10) : 9999
+}
+
+function compareLineName(a, b) {
+  const na = lineNumber(a)
+  const nb = lineNumber(b)
+  if (na !== nb) return na - nb
+  return String(a).localeCompare(String(b), 'zh-CN')
+}
+
+// 平铺的站点列表也按「号线 → 站序」排（用于默认选中等场景）
+function compareByLine(a, b) {
+  const la = (a.lineNames || [])[0] || ''
+  const lb = (b.lineNames || [])[0] || ''
+  const c = compareLineName(la, lb)
+  if (c !== 0) return c
+  return (a.lines?.get(la) ?? 9999) - (b.lines?.get(lb) ?? 9999)
+}
+
 const USE_MOCK = false
 
 const lineEnMap = new Map()
@@ -29,6 +57,8 @@ const emit = defineEmits(['back'])
 
 const allLines = ref([])
 const allSites = ref([])
+// 站点选择器的列表：按线路分组，[{ linename, linenameEn, endpoint, sites: [...] }]
+const siteGroups = ref([])
 const selectedSiteName = ref('')
 const selectedSite = ref(null)
 const busData = ref([])
@@ -85,13 +115,47 @@ const formattedTime = computed(() => {
   return `${hours}：${minutes}`
 })
 
-const filteredSites = computed(() => {
-  if (!siteSearchQuery.value) return allSites.value
-  const query = siteSearchQuery.value.toLowerCase()
-  return allSites.value.filter(site => 
-    site.siteName.toLowerCase().includes(query)
-  )
+// 命中相关度：完全相同 > 以输入开头 > 中间包含。
+// 用它排序，保证搜「lc」时「龙城」排在「白沙岭村(bslc)」前面
+function relevance(site, q) {
+  const name = site.siteName || ''
+  if (name === q) return 4
+  if (name.startsWith(q)) return 3
+  if (pinyinOfFn) {
+    const { full, first } = pinyinOfFn(name)
+    if (full === q || first === q) return 3
+    if (full.startsWith(q) || first.startsWith(q)) return 2
+  }
+  return 1
+}
+
+// 支持中文、全拼（longcheng / long）、首字母（lc）三种搜法。
+// 结果仍按线路分组返回，组内按相关度排序；没搜索时直接返回全部分组。
+const filteredSiteGroups = computed(() => {
+  const query = siteSearchQuery.value.trim()
+  if (!query) return siteGroups.value
+
+  const q = query.toLowerCase()
+  const usePinyin = pinyinReady.value && matchSiteFn
+  const groups = []
+
+  for (const group of siteGroups.value) {
+    let hits = group.sites.filter(site => site.siteName.includes(query))
+    if (usePinyin) {
+      hits = group.sites
+        .filter(site => matchSiteFn(site.siteName, query))
+        .sort((a, b) => relevance(b, q) - relevance(a, q))
+    }
+    if (hits.length > 0) {
+      groups.push({ ...group, sites: hits })
+    }
+  }
+  return groups
 })
+
+const hasSiteResult = computed(() =>
+  filteredSiteGroups.value.some(group => group.sites.length > 0)
+)
 
 async function loadTips() {
   try {
@@ -127,6 +191,12 @@ async function loadMedia() {
 async function loadAllLines() {
   if (USE_MOCK) {
     allSites.value = mockData.sites
+    siteGroups.value = [{
+      linename: '全部站点',
+      linenameEn: 'All Stops',
+      endpoint: '',
+      sites: mockData.sites
+    }]
     if (allSites.value.length > 0 && !selectedSiteName.value) {
       selectSite(allSites.value.find(s => s.siteName === '龙城') || allSites.value[0])
     }
@@ -152,10 +222,14 @@ async function loadAllLines() {
       lineMap.get(key).down = line
     }
     
-    line.siteList?.forEach(site => {
+    line.siteList?.forEach((site, idx) => {
       if (!siteMap.has(site.siteName)) {
-        siteMap.set(site.siteName, site)
+        siteMap.set(site.siteName, { ...site, lines: new Map() })
       }
+      const entry = siteMap.get(site.siteName)
+      // 同一条线路的上下行都会经过这个站，记下最靠前的站序，排序时用
+      const prev = entry.lines.get(line.linename)
+      if (prev === undefined || idx < prev) entry.lines.set(line.linename, idx)
     })
   })
   
@@ -167,10 +241,46 @@ async function loadAllLines() {
   
   allSites.value = Array.from(siteMap.values()).map(site => ({
     ...site,
-    siteNameEn: siteEnMap.get(site.siteName) || site.siteName
-  })).sort((a, b) => 
-    a.siteName.localeCompare(b.siteName, 'zh-CN')
-  )
+    siteNameEn: siteEnMap.get(site.siteName) || site.siteName,
+    lineNames: Array.from(site.lines.keys()).sort(compareLineName)
+  })).sort((a, b) => compareByLine(a, b))
+
+  // 按「1号线 → 2号线 → …」的顺序分组，组内就是该线路上行的站序。
+  // 同一个站在它所属的每条线路下都会出现一次（龙城这种枢纽站会重复），
+  // 这样乘客从线路出发找站时不会漏。
+  const siteLines = new Map()
+  Array.from(siteMap.entries()).forEach(([name, site]) => {
+    siteLines.set(name, Array.from(site.lines.keys()).sort(compareLineName))
+  })
+
+  const lineOrder = Array.from(lineMap.keys()).sort(compareLineName)
+  siteGroups.value = lineOrder.map(linename => {
+    const data = lineMap.get(linename)
+    // 优先用上行站序展示，没有上行就退回下行
+    const source = data.up?.siteList?.length ? data.up : (data.down || {})
+    const seen = new Set()
+    const sites = []
+    ;(source.siteList || []).forEach(site => {
+      if (seen.has(site.siteName)) return
+      seen.add(site.siteName)
+      sites.push({
+        ...site,
+        siteNameEn: siteEnMap.get(site.siteName) || site.siteName,
+        lineNames: siteLines.get(site.siteName) || [linename]
+      })
+    })
+    // 副标题用列表真实的首末站：部分线路（如 1B 线）官方 startpoint/endpoint
+    // 与 siteList 的顺序是对不上的，照抄会误导乘客
+    const endpoint = sites.length > 1
+      ? `${sites[0].siteName} ⇋ ${sites[sites.length - 1].siteName}`
+      : (sites[0]?.siteName || '')
+    return {
+      linename,
+      linenameEn: lineEnMap.get(linename) || linename,
+      endpoint,
+      sites
+    }
+  }).filter(group => group.sites.length > 0)
   
   if (allSites.value.length > 0 && !selectedSiteName.value) {
     selectSite(allSites.value.find(s => s.siteName === '龙城') || allSites.value[0])
@@ -333,6 +443,15 @@ onMounted(async () => {
   if (mediaList.value.length > 1) {
     mediaTimer = setInterval(nextMedia, 8000)
   }
+
+  // 后台预取拼音库，不阻塞大屏首屏
+  import('../utils/pinyin.js')
+    .then(mod => {
+      matchSiteFn = mod.matchSite
+      pinyinOfFn = mod.pinyinOf
+      pinyinReady.value = true
+    })
+    .catch(err => console.error('拼音库加载失败，站点搜索将只支持中文:', err))
 })
 
 onUnmounted(() => {
@@ -473,19 +592,27 @@ onUnmounted(() => {
         <input 
           v-model="siteSearchQuery" 
           type="text" 
-          placeholder="搜索站点..." 
+          placeholder="搜索站点：龙城 / longcheng / lc" 
           class="site-search"
         />
         <div class="site-list">
-          <div 
-            v-for="site in filteredSites" 
-            :key="site.id" 
-            class="site-option"
-            :class="{ active: selectedSiteName === site.siteName }"
-            @click="selectSite(site)"
-          >
-            {{ site.siteName }}
+          <div v-for="group in filteredSiteGroups" :key="group.linename" class="site-group">
+            <div class="site-group-title">
+              <span class="group-line">{{ group.linename }}</span>
+              <span class="group-route">{{ group.endpoint }}</span>
+            </div>
+            <div 
+              v-for="site in group.sites" 
+              :key="group.linename + '-' + site.siteName" 
+              class="site-option"
+              :class="{ active: selectedSiteName === site.siteName }"
+              @click="selectSite(site)"
+            >
+              <span class="site-opt-name">{{ site.siteName }}</span>
+              <span class="site-opt-en">{{ site.siteNameEn }}</span>
+            </div>
           </div>
+          <div v-if="!hasSiteResult" class="site-empty">没有匹配的站点</div>
         </div>
       </div>
     </div>
@@ -878,6 +1005,65 @@ onUnmounted(() => {
   cursor: pointer;
   margin-bottom: 5px;
   background: #f5f8fc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.site-group {
+  margin-bottom: 14px;
+}
+
+.site-group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 2px 8px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+  border-bottom: 1px solid #e6ecf5;
+}
+
+.group-line {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c5fa8;
+}
+
+.group-route {
+  font-size: 12px;
+  color: #9aa5b5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 同一条线内部的站点缩进，视觉上归到线路标题下面 */
+.site-group .site-option {
+  margin-bottom: 4px;
+  margin-left: 10px;
+}
+
+/* 站点的英文/拼音名 */
+.site-opt-en {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #8a94a6;
+}
+
+.site-option.active .site-opt-en {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.site-empty {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
 }
 
 .site-option:hover {
