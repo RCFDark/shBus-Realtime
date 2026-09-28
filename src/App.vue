@@ -9,7 +9,6 @@ const currentView = ref('list')
 const selectedLine = ref(null)
 const selectedSite = ref(null)
 const realTimeData = ref(null)
-const searchQuery = ref('')
 const direction = ref(1)
 const refreshing = ref(false)
 const runningVehicles = ref([])
@@ -37,14 +36,17 @@ function isLineSuspended(linename) {
   return suspendedLines.some(suspended => name.includes(suspended))
 }
 
-const filteredLines = computed(() => {
-  let result = lines.value
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(line => 
-      line.linename.toLowerCase().includes(query)
-    )
-  }
+// 票价：起价和全价一样时只显示一个（2元），不同才显示区间（2-4元）
+function formatFare(line) {
+  const start = line?.startingfare
+  const full = line?.fullfare
+  if (!start && !full) return ''
+  if (String(start) === String(full)) return `${start}元`
+  return `${start}-${full}元`
+}
+
+const sortedLines = computed(() => {
+  const result = [...lines.value]
   return result.sort((a, b) => {
     const aSuspended = isLineSuspended(a.linename)
     const bSuspended = isLineSuspended(b.linename)
@@ -438,24 +440,6 @@ async function loadRunningVehicles() {
       </div>
       
       <div v-else-if="currentView === 'list'" class="list-view">
-        <div class="search-box">
-          <input 
-            v-model="searchQuery"
-            type="text" 
-            placeholder="搜索线路..."
-            class="search-input"
-          />
-        </div>
-        
-        <div class="direction-toggle">
-          <button :class="{ active: direction === 1 }" @click="toggleDirection">
-            上行
-          </button>
-          <button :class="{ active: direction === 2 }" @click="toggleDirection">
-            下行
-          </button>
-        </div>
-        
         <div class="quick-actions">
           <button @click="openRunningVehicles" class="action-btn">
             运行车辆
@@ -466,12 +450,12 @@ async function loadRunningVehicles() {
         </div>
         
         <div class="line-count">
-          共 {{ filteredLines.length }} 条线路
+          共 {{ sortedLines.length }} 条线路
         </div>
         
         <div class="line-list">
           <div 
-            v-for="line in filteredLines" 
+            v-for="line in sortedLines" 
             :key="line.id"
             class="line-card"
             :class="{ suspended: isLineSuspended(line.linename) }"
@@ -481,7 +465,7 @@ async function loadRunningVehicles() {
               <div class="line-name">{{ line.linename }}</div>
               <div class="line-route">{{ line.startpoint }} ⇋ {{ line.endpoint }}</div>
               <div class="line-meta">
-                <span>票价 {{ line.startingfare }}-{{ line.fullfare }}元</span>
+                <span>票价 {{ formatFare(line) }}</span>
                 <span>{{ line.firstbus }}-{{ line.lastbus }}</span>
               </div>
             </div>
@@ -498,7 +482,7 @@ async function loadRunningVehicles() {
               <span class="dir-route">{{ directionRoute }}</span>
             </div>
             <div class="line-meta">
-              <span>票价 {{ selectedLine?.startingfare }}-{{ selectedLine?.fullfare }}元</span>
+              <span>票价 {{ formatFare(selectedLine) }}</span>
             </div>
             <div class="line-time">
               <span>上行 {{ selectedLine?.firstbus }}-{{ selectedLine?.lastbus }}</span>
@@ -726,43 +710,6 @@ async function loadRunningVehicles() {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-.search-box {
-  margin-bottom: 15px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 15px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.direction-toggle {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.direction-toggle button {
-  flex: 1;
-  padding: 10px;
-  border: 2px solid #667eea;
-  background: white;
-  color: #667eea;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.direction-toggle button.active {
-  background: #667eea;
-  color: white;
 }
 
 .quick-actions {
