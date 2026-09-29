@@ -50,3 +50,6 @@ captcha.jpg
 
 # 临时脚本
 .tmp*
+
+# api-snapshot.bat 抓取的接口原始返回（快照数据，不入库）
+api访问/
