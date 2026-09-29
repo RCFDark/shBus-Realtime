@@ -416,6 +416,43 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
   return 2 * R * Math.asin(Math.sqrt(a))
 }
 
+// 运行车辆面板里的「异常车辆」标记：
+//   stale —— 位置超过 5 分钟没更新，可能退出服务或 GPS 异常（与详情页实时公交同一标准）
+//   nogps —— 上游没给坐标，无法判断它到底在哪
+// 用 nowTs 派生，所以面板开着不动，30 秒后也会自己把新掉线的车标红
+const runningVehiclesView = computed(() => {
+  const now = nowTs.value
+  return runningVehicles.value.map(line => {
+    const flagged = line.vehicles.map(v => {
+      const lagSec = v.time ? now - v.time : null
+      const stale = lagSec !== null && lagSec > STALE_SECONDS
+      const lagMinutes = lagSec !== null ? Math.round(lagSec / 60) : 0
+      const kind = stale ? 'stale' : (v.noGps ? 'nogps' : '')
+      return {
+        ...v,
+        stale,
+        lagMinutes,
+        abnormalKind: kind,
+        abnormal: !!kind,
+        abnormalText: stale
+          ? `⚠ 可能退出服务或异常（已 ${lagMinutes} 分钟未更新位置）`
+          : (v.noGps ? '⚠ 无 GPS 定位' : '')
+      }
+    })
+    // 异常车排到该线路最前面，扫一眼就能看到
+    flagged.sort((a, b) => Number(b.abnormal) - Number(a.abnormal))
+    return { ...line, vehicles: flagged, abnormalCount: flagged.filter(v => v.abnormal).length }
+  })
+})
+
+const abnormalVehicleCount = computed(() =>
+  runningVehiclesView.value.reduce((n, line) => n + line.abnormalCount, 0)
+)
+
+const runningVehicleTotal = computed(() =>
+  runningVehiclesView.value.reduce((n, line) => n + line.vehicles.length, 0)
+)
+
 async function loadRunningVehicles() {
   loadingVehicles.value = true
   try {
@@ -472,7 +509,11 @@ async function loadRunningVehicles() {
               directionText,
               siteName: site?.siteName || '',
               status,
-              distanceText
+              distanceText,
+              // 上游上报位置的时间（秒级），用来判断这辆车是不是"还在报位置"
+              time: Number(bus.time) || 0,
+              timeStr: bus.timeStr || '',
+              noGps: !(lat && lng)
             })
           }
         }
@@ -685,23 +726,33 @@ async function loadRunningVehicles() {
           
           <div v-else class="vehicles-container">
             <div class="vehicles-header">
-              <h3>当前运行线路 ({{ runningVehicles.length }} 条)</h3>
+              <h3>当前运行线路 ({{ runningVehiclesView.length }} 条 / {{ runningVehicleTotal }} 辆)</h3>
               <button @click="loadRunningVehicles" class="refresh-btn">刷新</button>
             </div>
+
+            <div v-if="abnormalVehicleCount > 0" class="abnormal-summary">
+              ⚠ {{ abnormalVehicleCount }} 辆车数据异常（位置长时间未更新或无 GPS 定位），已在下方标出
+            </div>
             
-            <div v-if="runningVehicles.length === 0" class="no-vehicles">
+            <div v-if="runningVehiclesView.length === 0" class="no-vehicles">
               暂无运行车辆
             </div>
             
             <div v-else class="lines-list">
-              <div v-for="line in runningVehicles" :key="line.linename" class="line-group">
+              <div v-for="line in runningVehiclesView" :key="line.linename" class="line-group">
                 <div class="line-group-header">
                   <span class="line-name">{{ line.linename }}</span>
                   <span class="line-route">{{ line.startpoint }} ⇋ {{ line.endpoint }}</span>
                   <span class="vehicle-count">{{ line.vehicles.length }} 辆</span>
+                  <span v-if="line.abnormalCount" class="abnormal-count">{{ line.abnormalCount }} 辆异常</span>
                 </div>
                 <div class="line-vehicles">
-                  <div v-for="(vehicle, idx) in line.vehicles" :key="idx" class="vehicle-row">
+                  <div
+                    v-for="(vehicle, idx) in line.vehicles"
+                    :key="idx"
+                    class="vehicle-row"
+                    :class="{ 'is-abnormal': vehicle.abnormal, 'is-stale': vehicle.abnormalKind === 'stale', 'is-nogps': vehicle.abnormalKind === 'nogps' }"
+                  >
                     <span class="v-plate">{{ vehicle.plate }}</span>
                     <span class="v-direction" :class="{ up: vehicle.direction === 1, down: vehicle.direction === 2 }">{{ vehicle.directionText }}</span>
                     <span v-if="vehicle.siteName" class="v-position">
@@ -710,6 +761,8 @@ async function loadRunningVehicles() {
                       <span v-else>位置：{{ vehicle.siteName }}</span>
                       <span v-if="vehicle.distanceText" class="v-dist">{{ vehicle.distanceText }}</span>
                     </span>
+                    <span v-if="vehicle.abnormal" class="v-abnormal">{{ vehicle.abnormalText }}</span>
+                    <span v-else-if="vehicle.timeStr" class="v-update">更新 {{ vehicle.timeStr }}</span>
                   </div>
                 </div>
               </div>
@@ -1457,6 +1510,10 @@ async function loadRunningVehicles() {
   flex: 1;
   font-size: 13px;
   opacity: 0.9;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .line-group-header .vehicle-count {
@@ -1473,13 +1530,77 @@ async function loadRunningVehicles() {
 .vehicle-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px 10px;
   padding: 8px 0;
   border-bottom: 1px solid #eee;
 }
 
 .vehicle-row:last-child {
   border-bottom: none;
+}
+
+/* 异常车辆：整行标红（位置长时间未更新）或标橙（无 GPS 定位） */
+.vehicle-row.is-stale {
+  background: #fff1f0;
+  border-left: 3px solid #ff4d4f;
+  padding-left: 8px;
+  border-radius: 4px;
+}
+
+.vehicle-row.is-nogps {
+  background: #fff7e6;
+  border-left: 3px solid #fa8c16;
+  padding-left: 8px;
+  border-radius: 4px;
+}
+
+.v-abnormal {
+  flex-basis: 100%;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.is-stale .v-abnormal {
+  color: #cf1322;
+}
+
+.is-nogps .v-abnormal {
+  color: #ad6800;
+}
+
+.v-update {
+  font-size: 12px;
+  color: #9aa0a6;
+  white-space: nowrap;
+}
+
+.line-group-header {
+  flex-wrap: wrap;
+}
+
+.abnormal-summary {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+  border-radius: 8px;
+  color: #cf1322;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.line-group-header .abnormal-count {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+  color: #cf1322;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .v-plate {
@@ -1489,6 +1610,7 @@ async function loadRunningVehicles() {
 }
 
 .v-direction {
+  flex-shrink: 0;
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 10px;
@@ -1536,6 +1658,7 @@ async function loadRunningVehicles() {
   font-size: 13px;
   text-align: right;
   color: #666;
+  white-space: nowrap;
 }
 
 .v-position .v-state {
