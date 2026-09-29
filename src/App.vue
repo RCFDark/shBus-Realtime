@@ -28,6 +28,18 @@ function extractLineNumber(name) {
   return match ? parseInt(match[1], 10) : 999
 }
 
+// 线路的特殊情况公告：改线、绕行等（key = 线路名）
+//   text     —— 详情页顶部展示的提示文案
+//   segments —— 站点区间（按站名匹配，含两端），这些站已不停靠：
+//               站点轨道上会盖一层灰色半透明遮罩，且该区间没有实时公交信息
+const LINE_NOTICES = {
+  '13号线': {
+    text: '13号线改线至 四会广场 - 人民医院新院 - 广州华商学院（四会校区） - 前锋村，'
+      + '不停靠 大隆湾 - 大旺路口 沿途各站，在该区间没有实时公交信息',
+    segments: [{ from: '大隆湾', to: '大旺路口' }]
+  }
+}
+
 const suspendedLines = ['1B', '9B', '21号']
 
 function isLineSuspended(linename) {
@@ -72,11 +84,14 @@ function isOperationEnded(line, dir) {
 
 onMounted(async () => {
   nowTimer = setInterval(() => { nowTs.value = Math.floor(Date.now() / 1000) }, 30000)
+  // 站点遮罩是按像素算的，窗口尺寸变了要重算
+  window.addEventListener('resize', updateSkipMasks)
   await loadLines()
 })
 
 onUnmounted(() => {
   if (nowTimer) clearInterval(nowTimer)
+  window.removeEventListener('resize', updateSkipMasks)
 })
 
 async function loadLines() {
@@ -123,6 +138,7 @@ async function loadRealTimeData() {
     
     await nextTick()
     updateBusLocations()
+    updateSkipMasks()
   } catch (error) {
     console.error('获取实时数据失败:', error)
   } finally {
@@ -241,6 +257,69 @@ const directionRoute = computed(() => {
   if (!start || !end) return ''
   return direction.value === 2 ? `${end} → ${start}` : `${start} → ${end}`
 })
+
+const lineNotice = computed(() => {
+  const name = selectedLine.value?.linename
+  return name ? (LINE_NOTICES[name] || null) : null
+})
+
+// 不停靠区间在当前站点列表里的下标（含两端）。站点列表会按方向倒序，
+// 所以两端取 min/max，上下行都能正确圈出区间
+function skippedRanges() {
+  const notice = lineNotice.value
+  const sites = selectedLine.value?.siteList || []
+  if (!notice?.segments?.length || !sites.length) return []
+  const out = []
+  for (const seg of notice.segments) {
+    const a = sites.findIndex(s => s.siteName === seg.from)
+    const b = sites.findIndex(s => s.siteName === seg.to)
+    if (a === -1 || b === -1) continue
+    out.push({ from: Math.min(a, b), to: Math.max(a, b), label: `${seg.from} - ${seg.to}` })
+  }
+  return out
+}
+
+// 落在不停靠区间内的站点下标集合（用于把站点灰掉）
+const skippedSiteIndices = computed(() => {
+  const set = new Set()
+  skippedRanges().forEach(r => {
+    for (let i = r.from; i <= r.to; i++) set.add(i)
+  })
+  return set
+})
+
+// 当前选中的站点是否在不停靠区间内
+const selectedSiteSkipped = computed(() => {
+  const idx = selectedSiteIndex()
+  return idx !== -1 && skippedSiteIndices.value.has(idx)
+})
+
+// 遮罩层位置：站点是 flex 横排、宽度随站名长度变化，只能等 DOM 渲染完实测
+const skipMasks = ref([])
+function updateSkipMasks() {
+  const track = sitesContainerRef.value
+  const ranges = skippedRanges()
+  if (!track || !ranges.length) {
+    skipMasks.value = []
+    return
+  }
+  const elements = track.querySelectorAll('.site-item')
+  if (!elements.length) {
+    skipMasks.value = []
+    return
+  }
+  const baseLeft = track.getBoundingClientRect().left
+  const masks = []
+  for (const r of ranges) {
+    const first = elements[r.from]
+    const last = elements[r.to]
+    if (!first || !last) continue
+    const left = first.getBoundingClientRect().left - baseLeft
+    const right = last.getBoundingClientRect().right - baseLeft
+    masks.push({ left: left - 6, width: right - left + 12, label: r.label })
+  }
+  skipMasks.value = masks
+}
 
 function updateBusLocations() {
   if (!realTimeData.value?.sList || !selectedLine.value?.siteList || !sitesContainerRef.value) {
@@ -493,8 +572,12 @@ async function loadRunningVehicles() {
           <div v-if="isLineSuspended(selectedLine?.linename)" class="suspended-notice">
             线路已停运
           </div>
-          
+
           <template v-else>
+            <div v-if="lineNotice" class="line-notice">
+              <span class="notice-icon">!</span>
+              <span class="notice-text">{{ lineNotice.text }}</span>
+            </div>
             <div class="realtime-section" v-if="realTimeData">
               <div class="realtime-header">
                 <h3>实时公交</h3>
@@ -506,8 +589,11 @@ async function loadRunningVehicles() {
                 </div>
               </div>
               <div class="current-site">当前站点: {{ selectedSite?.siteName }}</div>
-              
-              <div v-if="filteredVehicleList.length > 0" class="vehicle-list">
+
+              <div v-if="selectedSiteSkipped" class="no-bus skipped">
+                本站在改线不停靠区间内，车辆不经停，没有实时公交信息
+              </div>
+              <div v-else-if="filteredVehicleList.length > 0" class="vehicle-list">
                 <div
                   v-for="vehicle in filteredVehicleList"
                   :key="vehicle.vehicleid"
@@ -556,10 +642,21 @@ async function loadRunningVehicles() {
               </div>
               
               <div class="sites-track" ref="sitesContainerRef">
+                    <!-- 改线不停靠区间：盖一层灰色半透明遮罩。
+                         注意不要给它 site-item 类，updateBusLocations 靠该类名取站点索引 -->
+                    <div
+                      v-for="(mask, maskIdx) in skipMasks"
+                      :key="'mask-' + maskIdx"
+                      class="site-skip-mask"
+                      :style="{ left: mask.left + 'px', width: mask.width + 'px' }"
+                      aria-hidden="true"
+                    >
+                      <span class="skip-tag">{{ mask.label }} 不停靠</span>
+                    </div>
                     <template v-for="(site, siteIdx) in selectedLine?.siteList" :key="site.id">
                       <div
                         class="site-item"
-                        :class="{ active: selectedSite?.id === site.id }"
+                        :class="{ active: selectedSite?.id === site.id, 'is-skipped': skippedSiteIndices.has(siteIdx) }"
                         @click="selectSite(site)"
                       >
                         <div class="site-dot"></div>
@@ -831,6 +928,77 @@ async function loadRunningVehicles() {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 15px;
+}
+
+/* 线路公告（改线、绕行等） */
+.line-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f2f4f7;
+  border: 1px solid #d9dee6;
+  border-left: 4px solid #8a94a6;
+  color: #4a5364;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.line-notice .notice-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #8a94a6;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* 选中的站点落在不停靠区间内：实时公交区块直接给出提示，不出车辆卡片 */
+.no-bus.skipped {
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #ad6800;
+}
+
+/* 站点轨道上「不停靠区间」的灰色半透明遮罩 */
+.site-skip-mask {
+  position: absolute;
+  top: 2px;
+  bottom: 4px;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 10px;
+  background: rgba(120, 128, 140, 0.16);
+  border: 1px dashed rgba(96, 105, 118, 0.5);
+  display: flex;
+  justify-content: center;
+}
+
+.site-skip-mask .skip-tag {
+  margin-top: 2px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(96, 105, 118, 0.85);
+  color: #fff;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* 区间内的站点灰掉，视觉上表示不停靠 */
+.site-item.is-skipped .site-dot {
+  background: #c8ccd2;
+  box-shadow: 0 0 0 2px #d7dae0;
+}
+
+.site-item.is-skipped .site-name {
+  color: #a5abb4;
 }
 
 .line-header h2 {
