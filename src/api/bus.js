@@ -1,4 +1,5 @@
 import { API_CONFIG } from './config'
+import { staticLineList } from './staticLines.js'
 
 const TIMEOUT_MS = 8000
 
@@ -40,8 +41,10 @@ const vehicleCache = new Map()
 const VEHICLE_TTL = 5 * 60 * 1000
 
 export const busAPI = {
+  // 线路/票价/首末班/站点是静态数据，直接读本地快照，不打上游接口
+  // （见 src/api/staticLines.js：上行下行各一份，由 api-snapshot 快照生成）
   async getLineList(direction = 1, type = 1) {
-    return request('/gj/line/findList', { direction, type })
+    return staticLineList(direction, type)
   },
 
   async getBusRealTime(linename, longitude, latitude, sitename, direction = 1) {

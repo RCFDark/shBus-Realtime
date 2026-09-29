@@ -1617,14 +1617,15 @@ async function loadRunningVehicles() {
   font-weight: 600;
 }
 
+/* 上行/下行标签：实心底 + 白字，浅色方案在窄屏小字号下看不清 */
 .v-direction.up {
-  background: #e6f7ff;
-  color: #1890ff;
+  background: #1890ff;
+  color: #fff;
 }
 
 .v-direction.down {
-  background: #fff0e6;
-  color: #fa8c16;
+  background: #fa8c16;
+  color: #fff;
 }
 
 .v-time {
