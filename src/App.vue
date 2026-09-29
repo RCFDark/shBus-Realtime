@@ -970,24 +970,25 @@ async function loadRunningVehicles() {
 /* 站点轨道上「不停靠区间」的灰色半透明遮罩 */
 .site-skip-mask {
   position: absolute;
-  top: 2px;
+  top: 20px;
   bottom: 4px;
   z-index: 2;
   pointer-events: none;
   border-radius: 10px;
   background: rgba(120, 128, 140, 0.16);
   border: 1px dashed rgba(96, 105, 118, 0.5);
-  display: flex;
-  justify-content: center;
 }
 
+/* 说明文字浮在灰框上方：纯灰色小字，不加底片，避免挡住站点
+   （.sites-scroll 是 overflow-x:auto，纵向也会裁切，所以文字必须留在轨道内） */
 .site-skip-mask .skip-tag {
-  margin-top: 2px;
-  padding: 1px 8px;
-  border-radius: 8px;
-  background: rgba(96, 105, 118, 0.85);
-  color: #fff;
-  font-size: 10px;
+  position: absolute;
+  top: -17px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8a94a6;
+  font-size: 11px;
+  line-height: 14px;
   white-space: nowrap;
 }
 
